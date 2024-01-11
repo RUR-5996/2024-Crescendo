@@ -1,0 +1,111 @@
+{
+  "waypoints": [
+    {
+      "anchorPoint": {
+        "x": 3.529341791303411,
+        "y": 0.791168017976216
+      },
+      "prevControl": null,
+      "nextControl": {
+        "x": 3.6009155058794113,
+        "y": 0.791168017976216
+      },
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [
+          "set_rameno_5"
+        ],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 1.432785672588889,
+        "y": 0.8433039673096898
+      },
+      "prevControl": {
+        "x": 1.90032760138785,
+        "y": 0.9361143489614967
+      },
+      "nextControl": {
+        "x": 1.90032760138785,
+        "y": 0.9361143489614967
+      },
+      "holonomicAngle": -180.0,
+      "isReversal": true,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": true,
+      "stopEvent": {
+        "names": [
+          "outtake_gripper_box"
+        ],
+        "executionBehavior": "parallel",
+        "waitBehavior": "after",
+        "waitTime": 0.5
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 3.142251603352117,
+        "y": 0.8156158193205066
+      },
+      "prevControl": {
+        "x": 2.8562383088195533,
+        "y": 0.8283099613529176
+      },
+      "nextControl": {
+        "x": 3.454014407024119,
+        "y": 0.8017788355652482
+      },
+      "holonomicAngle": 180.0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    },
+    {
+      "anchorPoint": {
+        "x": 6.54728642790619,
+        "y": 0.9158500773141907
+      },
+      "prevControl": {
+        "x": 6.2753063125173885,
+        "y": 0.8442763627381897
+      },
+      "nextControl": null,
+      "holonomicAngle": 0,
+      "isReversal": false,
+      "velOverride": null,
+      "isLocked": false,
+      "isStopPoint": false,
+      "stopEvent": {
+        "names": [],
+        "executionBehavior": "parallel",
+        "waitBehavior": "none",
+        "waitTime": 0
+      }
+    }
+  ],
+  "markers": [
+    {
+      "position": 1.6090909090909085,
+      "names": [
+        "set_rameno_0",
+        "disable_gripper"
+      ]
+    }
+  ]
+}
