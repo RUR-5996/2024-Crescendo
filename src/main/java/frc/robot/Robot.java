@@ -35,7 +35,7 @@ public class Robot extends TimedRobot {
     SWERVE = SwerveDrive.getInstance();
     Rameno.robotInit();
     Gripper.robotInit();
-    Autonomous.robotInit();
+    //Autonomous.robotInit();
     
     SWERVE.init();
     LimelightAiming.init();
@@ -52,14 +52,14 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
-    Autonomous.init();
+    //Autonomous.init();
   }
 
 
   
   @Override
   public void autonomousPeriodic() {
-    Autonomous.periodic();
+    //Autonomous.periodic();
     Rameno.autonomousPeriodic();
   }
 

@@ -3,15 +3,15 @@ package frc.robot;
 import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.FeedbackDevice;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.SparkMaxAbsoluteEncoder;
+import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
-import com.revrobotics.SparkMaxRelativeEncoder;
+import com.revrobotics.SparkPIDController;
+import com.revrobotics.SparkRelativeEncoder;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
@@ -28,17 +28,17 @@ public class SwerveDef {
         public boolean inverted;
 
         public SteerMotor(int id, boolean inverted) {
-            super(id, CANSparkMaxLowLevel.MotorType.kBrushless);
+            super(id, CANSparkMax.MotorType.kBrushless);
             this.inverted = inverted;
         }
     }
 
-    public static class DriveMotor extends WPI_TalonFX {
-        public TalonFXInvertType invertType;
+    public static class DriveMotor extends TalonFX {
+        public boolean inverted;
 
-        public DriveMotor(int id, TalonFXInvertType invertType) {
+        public DriveMotor(int id, boolean inverted) {
             super(id);
-            this.invertType = invertType;
+            this.inverted = inverted;
         }
     }
 
@@ -57,8 +57,8 @@ public class SwerveDef {
     // should create a lib for this
     public static class SwerveModule {
         public RelativeEncoder neoEncoder;
-        public SparkMaxAbsoluteEncoder neoAbsEncoder;
-        public SparkMaxPIDController neoController;
+        public SparkAbsoluteEncoder neoAbsEncoder;
+        public SparkPIDController neoController;
         public SteerMotor steerMotor;
         public DriveMotor driveMotor;
         public SteerSensor steerSensor;
@@ -77,13 +77,14 @@ public class SwerveDef {
         }
 
         public void moduleInit() {
-            driveMotor.configFactoryDefault();
-            driveMotor.setInverted(driveMotor.invertType);
+            driveMotor.setInverted(driveMotor.inverted);
+            var slot0configs = new Slot0Configs();
+            slot0configs.kP = 0;
+            slot0configs.kD = 0;
+            slot0configs.kI = 0;
+            slot0configs.senso
+            driveMotor.getConfigurator().apply(slot0configs);
             driveMotor.configSelectedFeedbackSensor(FeedbackDevice.IntegratedSensor, 0, TIMEOUT_MS);
-            driveMotor.config_kP(0, drivePID.kP, TIMEOUT_MS);
-            driveMotor.config_kI(0, drivePID.kI, TIMEOUT_MS);
-            driveMotor.config_kD(0, drivePID.kD, TIMEOUT_MS);
-            driveMotor.config_kF(0, drivePID.kF, TIMEOUT_MS);
             driveMotor.config_IntegralZone(0, 300); 
             driveMotor.configOpenloopRamp(0.25);
 
@@ -105,12 +106,12 @@ public class SwerveDef {
         }
 
         public void disabledInit() {
-            driveMotor.setNeutralMode(NeutralMode.Coast);
+            driveMotor.setNeutralMode(NeutralModeValue.Coast);
             steerMotor.setIdleMode(CANSparkMax.IdleMode.kCoast);
         }
 
         public void enabledInit() {
-            driveMotor.setNeutralMode(NeutralMode.Brake);
+            driveMotor.setNeutralMode(NeutralModeValue.Brake);
             steerMotor.setIdleMode(CANSparkMax.IdleMode.kBrake);
         }
 
