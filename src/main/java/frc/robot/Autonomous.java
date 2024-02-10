@@ -10,7 +10,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveOdometry;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj.Timer;
-import com.pathplanner.lib.path.PathPlannerTrajectory.State;
+import com.pathplanner.lib.path.PathPlannerTrajectory.State;;
 
 public class Autonomous{
     // Create config for trajectory
@@ -60,20 +60,20 @@ public class Autonomous{
                 if (elapsedTime <  ((State) _pathTraj.getEndState()).timeSeconds){
                     ChassisSpeeds _speeds = HDC.calculate(
                         _odometry.getPoseMeters(), 
-                        ((State) _pathTraj.sample(elapsedTime)),((State) _pathTraj.sample(elapsedTime)).holonomicRotation);
-                    Robot.SWERVEDRIVE.drive(_speeds.vxMetersPerSecond,
+                        ((State) _pathTraj.sample(elapsedTime)),((State) _pathTraj.sample(elapsedTime)).targetHolonomicRotation);
+                    SwerveDrive.drive(_speeds.vxMetersPerSecond,
                     _speeds.vyMetersPerSecond, 
-                    _speeds.omegaRadiansPerSecond,false);
+                    _speeds.omegaRadiansPerSecond);
                     
                 } else {
-                    Robot.SWERVEDRIVE.drive(0,0,0,false);
-                    Robot.SWERVEDRIVE.setHoldRobotAngleSetpoint(((State) _pathTraj.getEndState()).holonomicRotation.getRadians());
+                    SwerveDrive.drive(0,0,0);
+                    SwerveDrive.setHoldRobotAngleSetpoint(((State) _pathTraj.getEndState()).targetHolonomicRotation.getRadians());
                     trajectoryStatus = "done";
 
                 }
                 break;
             default:
-                Robot.SWERVEDRIVE.drive(0,0,0,false);
+                SwerveDrive.drive(0,0,0);
                 break;
         }
     }

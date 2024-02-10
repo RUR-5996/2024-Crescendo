@@ -33,7 +33,7 @@ public class SwerveDrive {
     public static double limelightAimRotation = 0;
 
     public static boolean fieldOriented = false;
-    public static double holdAngle = Math.PI/2;
+    public static double holdAngle = Math.PI/2; //todo funkce do ktere passnu cislo a prepise to tuhle hodnotu
     public static boolean fieldRelative = false; 
 
     public static boolean assistedDrive = false;
@@ -95,6 +95,10 @@ public class SwerveDrive {
             SwerveDef.frModule.setAngle(45);
             SwerveDef.flModule.setAngle(135);
         }
+    }
+
+    public static void setHoldRobotAngleSetpoint(double angle) {
+        holdAngle = angle;
     }
 
     /**
