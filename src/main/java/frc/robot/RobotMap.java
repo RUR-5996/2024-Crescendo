@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.XboxController;
 
+import com.ctre.phoenix.motorcontrol.can.VictorSPX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
 import com.kauailabs.navx.frc.AHRS;
@@ -26,4 +27,7 @@ public class RobotMap {
     public static final WPI_VictorSPX gripper = new WPI_VictorSPX(2);
     public static final WPI_VictorSPX release = new WPI_VictorSPX(3);
     public static final AHRS gyro = new AHRS(SPI.Port.kMXP);
+
+    public static WPI_VictorSPX shooter = new WPI_VictorSPX(1);
+    public static WPI_VictorSPX shooterAim = new WPI_VictorSPX(2);
 }
