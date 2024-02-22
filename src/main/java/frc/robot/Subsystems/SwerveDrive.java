@@ -292,4 +292,8 @@ public class SwerveDrive extends SubsystemBase {
             m_odometry.resetPosition(getRobotAngle(), m_driveTrain.getModulePositions(), new Pose2d(robotPose.getTranslation(), new Rotation2d(0)));
         }
     }
+
+    public void activteHandBrake() {
+        m_driveTrain.handBrakeX(); //TODO test also handBrake90
+    }
 }

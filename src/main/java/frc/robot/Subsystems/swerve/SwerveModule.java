@@ -38,19 +38,9 @@ public class SwerveModule {
     private PositionDutyCycle m_angleSetter = new PositionDutyCycle(0); //unused, steering with SPARKMAX
     private VelocityTorqueCurrentFOC m_velocitySetter = new VelocityTorqueCurrentFOC(0);
 
-    boolean readyToSeed = false;
-    boolean readyToCanCoderAbs = false; //unused
-    boolean canCoderAbsSuccessful = false; //unused
-    boolean prepareForSeeding = true;
-    boolean seedingOccured = false;
-    boolean seedingSuccessful = false;
-    double seedingTimer;
-    boolean guudder;
-
     public final SteerMotor steerMotor;
     public final DriveMotor driveMotor;
     public final Translation2d moduleXYTranslation;
-    //public final SwerveModuleSim simModule;
     public String steerMode = "integrated";
     public boolean hasSwerveSeedingOccured = false;
     public boolean hasCANCoderBeenSetToAbs = false; //unused
@@ -93,6 +83,8 @@ public class SwerveModule {
         steerMotor.setIdleMode(IdleMode.kBrake);
         steerMotor.steerEncoder.setPositionConversionFactor(SwerveConstants.kSteerConversionFactor);
         steerMotor.steerEncoder.setInverted(steerMotor.kInverted); //might need separate variable
+        steerMotor.testEncoder.setInverted(steerMotor.kInverted);
+        steerMotor.testEncoder.setPositionConversionFactor(SwerveConstants.kSteerConversionFactor);
         steerMotor.m_PidController.setP(steerMotor.kGains.kP);
         steerMotor.m_PidController.setI(steerMotor.kGains.kI);
         steerMotor.m_PidController.setD(steerMotor.kGains.kD);
@@ -137,7 +129,8 @@ public class SwerveModule {
     public SwerveModulePosition getPosition() {
         m_drivePosition.refresh();
         m_driveVelocity.refresh();
-        m_steerPosition = steerMotor.steerEncoder.getPosition();
+        //m_steerPosition = steerMotor.steerEncoder.getPosition();
+        m_steerPosition = steerMotor.testEncoder.getPosition();
         m_steerVelocity = steerMotor.steerEncoder.getVelocity();
 
         double drive_rot = m_drivePosition.getValue() + (m_driveVelocity.getValue() * m_drivePosition.getTimestamp().getLatency());

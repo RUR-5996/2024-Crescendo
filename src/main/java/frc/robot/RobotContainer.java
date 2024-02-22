@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Filesystem;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -15,10 +16,15 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriverConstants;
+import frc.robot.Constants.ShooterConstants;
+import frc.robot.Subsystems.Intake;
+import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.SwerveDrive;
 import frc.robot.Subsystems.swerve.SwerveConstants;
 import frc.robot.util.SendableChooserEnum;
@@ -41,6 +47,9 @@ import com.pathplanner.lib.util.ReplanningConfig;
 
 public class RobotContainer {
     private final CommandXboxController xBox = new CommandXboxController(0);
+    private final GenericHID coDrive = new GenericHID(1); //TODO change to address axis if needed
+    private final Trigger b1 = new JoystickButton(coDrive, 1); //TODO change to appropriate buttons
+    private final Trigger b2 = new JoystickButton(coDrive, 2);
 
     private AutoBuilder autoBuilder = new AutoBuilder();
     private final AutoBuilder otfBuilder = new AutoBuilder();
@@ -50,11 +59,13 @@ public class RobotContainer {
 
     private final PowerDistribution pdp = new PowerDistribution(1, ModuleType.kCTRE);
     private final SwerveDrive s_drive = SwerveDrive.getInstance();
+    private final Shooter s_shooter = Shooter.getInstance();
+    private final Intake s_intake = Intake.getInstance();
 
 
   public RobotContainer() {
 
-    Preferences.initBoolean("pFieldRelative", DriverConstants.FIELD_RELATIVE);
+    Preferences.initBoolean("pFieldRelative", DriverConstants.FIELD_RELATIVE); //TODO remove???
     Preferences.initBoolean("pAccelInputs", DriverConstants.ACCELERATED_INPUTS);
     Preferences.initDouble("pDriveGovernor", DriverConstants.DRIVE_GOVERNOR);
     Preferences.initBoolean("pOptimizeSteering", SwerveConstants.OPTIMIZESTEERING);
@@ -106,6 +117,10 @@ public class RobotContainer {
       .onTrue(Commands.runOnce(s_drive::setToBrake).ignoringDisable(true)
       .withName("setToBreak"));
 
+    b1.onTrue(Commands.runOnce(() -> s_shooter.setShortSpeed(ShooterConstants.SHOOT_SPEED)) //TODO fancy logic for turning off and on with one button
+      .andThen(Commands.waitSeconds(0.5)) 
+      .andThen(Commands.runOnce(() -> s_shooter.setLongSpeed(ShooterConstants.FEED_SPEED)))); //TODO fancy logic to deploy in different directions based on enum
+
   }
 
   private void loadPaths() {
@@ -140,6 +155,10 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return autoBuilder.followPath(autoSelect.getSelected());
+  }
+
+  private void buttonBinds() {
+    
   }
 
   public enum PickupLocation {

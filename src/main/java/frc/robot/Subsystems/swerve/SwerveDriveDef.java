@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -48,6 +49,20 @@ public class SwerveDriveDef {
 
     public String getSteerMethodStrings() {
         return FLModule.steerMode + FRModule.steerMode + RLModule.steerMode + RRModule.steerMode;
+    }
+
+    public void handBrake90(Rotation2d angle) {
+        FLModule.setDesiredState(new SwerveModuleState(0, angle.rotateBy(Rotation2d.fromDegrees(90))));//TODO check this
+        FRModule.setDesiredState(new SwerveModuleState(0, angle.rotateBy(Rotation2d.fromDegrees(90))));
+        RLModule.setDesiredState(new SwerveModuleState(0, angle.rotateBy(Rotation2d.fromDegrees(90))));
+        RRModule.setDesiredState(new SwerveModuleState(0, angle.rotateBy(Rotation2d.fromDegrees(90))));
+    }
+
+    public void handBrakeX() {
+        FLModule.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(90)));//TODO check this
+        FRModule.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(90)));
+        RLModule.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(90)));
+        RRModule.setDesiredState(new SwerveModuleState(0, Rotation2d.fromDegrees(90)));
     }
 
     public void setModuleSpeeds(SwerveModuleState[] _swerveModuleSates) {
