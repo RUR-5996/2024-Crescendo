@@ -1,10 +1,8 @@
 package frc.robot.Subsystems;
 
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.robot.Subsystems.swerve.SwerveConstants;
 import frc.robot.Subsystems.swerve.SwerveDriveDef;
-import frc.robot.Subsystems.swerve.SwerveModule;
 import frc.robot.util.LimelightHelpers;
 import frc.robot.util.LimelightPose2d;
 

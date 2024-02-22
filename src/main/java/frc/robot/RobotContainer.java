@@ -157,10 +157,6 @@ public class RobotContainer {
     return autoBuilder.followPath(autoSelect.getSelected());
   }
 
-  private void buttonBinds() {
-    
-  }
-
   public enum PickupLocation {
     GROUND, CHUTE
   }

@@ -9,8 +9,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import frc.robot.Subsystems.swerve.SwerveModule.DriveMotor;
-import frc.robot.Subsystems.swerve.SwerveModule.SteerMotor;
 
 public class SwerveDriveDef {
     public NeutralModeValue NeutralMode = NeutralModeValue.Brake;
