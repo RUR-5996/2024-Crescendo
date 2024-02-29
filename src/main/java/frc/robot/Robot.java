@@ -4,123 +4,86 @@
 
 package frc.robot;
 
+import java.util.Map;
+
+import edu.wpi.first.networktables.GenericEntry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
-/**
- * The VM is configured to automatically run this class, and to call the
- * functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the
- * name of this class or
- * the package after creating this project, you must also update the
- * build.gradle file in the
- * project.
- */
+import io.github.oblarg.oblog.Logger;
+
 public class Robot extends TimedRobot {
-  /**
-   * This function is run when the robot is first started up and should be used
-   * for any
-   * initialization code.
-   */
-
-  static SwerveDrive SWERVE;
-  static double startTime = 0;
+  private Command m_autonomousCommand;
+  private RobotContainer m_robotContainer;
+  private GenericEntry matchTimeEntry;
 
   @Override
   public void robotInit() {
-    SwerveDef.flModule.moduleInit();
-    SwerveDef.frModule.moduleInit();
-    SwerveDef.rlModule.moduleInit();
-    SwerveDef.rrModule.moduleInit();
-
-    SWERVE = SwerveDrive.getInstance();
-    Rameno.robotInit();
-    Gripper.robotInit();
-    //Autonomous.robotInit();
-    
-    SWERVE.init();
-    LimelightAiming.init();
+    m_robotContainer = new RobotContainer();
+    matchTimeEntry = Shuffleboard.getTab("selector")
+      .add("Match time", "")
+      .withWidget(BuiltInWidgets.kTextView)
+      .withProperties(Map.of("Width", 50, "Height", 12))
+      .withPosition(17, 2)
+      .withSize(7,3)
+      .getEntry();
   }
 
   @Override
   public void robotPeriodic() {
-    SWERVE.report();
-    //Test.report();
-    Rameno.report();
-    Gripper.report();
-    LimelightAiming.periodic();
+    CommandScheduler.getInstance().run();
+    io.github.oblarg.oblog.Logger.updateEntries();
+    matchTimeEntry.setString(String.format("%.2f", DriverStation.getMatchTime()));
   }
+
+  @Override
+  public void disabledInit() {}
+
+  @Override
+  public void disabledPeriodic() {}
+
+  @Override
+  public void disabledExit() {}
 
   @Override
   public void autonomousInit() {
-    //Autonomous.init();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+
+    m_autonomousCommand.schedule();
+    
   }
 
-
-  
   @Override
-  public void autonomousPeriodic() {
-    //Autonomous.periodic();
-    Rameno.autonomousPeriodic();
-  }
+  public void autonomousPeriodic() {}
+
+  @Override
+  public void autonomousExit() {}
 
   @Override
   public void teleopInit() {
-    SwerveDef.flModule.enabledInit(); // TODO make this cleaner
-    SwerveDef.frModule.enabledInit();
-    SwerveDef.rlModule.enabledInit();
-    SwerveDef.rrModule.enabledInit();
-    SWERVE.init();
-
-    //Manipulator.init();
-    //Test.init();
-    //Test.teleopInit();
-
-    Rameno.teleopInit();
-    Gripper.teleopInit();
+    if (m_autonomousCommand != null) {
+      m_autonomousCommand.cancel();
+    }
   }
 
   @Override
-  public void teleopPeriodic() {
-    //Manipulator.periodic();
-    SWERVE.periodic();
-    //Test.periodic();
-    //Test.pidFollow();
-    Rameno.teleopPeriodic();
-    Gripper.teleopPeriodic();
-  }
+  public void teleopPeriodic() {}
 
   @Override
-  public void disabledInit() {
-    SwerveDef.flModule.disabledInit(); // TODO make this cleaner
-    SwerveDef.frModule.disabledInit();
-    SwerveDef.rlModule.disabledInit();
-    SwerveDef.rrModule.disabledInit();
-
-    //Manipulator.disabledInit();
-    //Test.disabledInit();
-    Rameno.disabledInit();
-  }
-
-  @Override
-  public void disabledPeriodic() {
-    Rameno.disabledPeriodic();
-  }
+  public void teleopExit() {}
 
   @Override
   public void testInit() {
-
+    CommandScheduler.getInstance().cancelAll();
   }
 
   @Override
-  public void testPeriodic() {
-
-  }
+  public void testPeriodic() {}
 
   @Override
-  public void simulationInit() {
-  }
-
-  @Override
-  public void simulationPeriodic() {
-  }
+  public void testExit() {}
 }
