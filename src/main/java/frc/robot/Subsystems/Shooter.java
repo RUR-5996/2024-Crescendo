@@ -17,8 +17,11 @@ import frc.robot.Constants.ShooterConstants;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 import io.github.oblarg.oblog.annotations.Config;
+import robot.util.PID;
+import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class Shooter extends SubsystemBase implements Loggable{
+    private final CommandXboxController m_controller = new CommandXboxController(0);
     private final CANSparkMax m_rotationMotor;
     private final SparkAbsoluteEncoder m_rotationEncoder;
     private final SparkPIDController m_rotationPID;
@@ -33,6 +36,7 @@ public class Shooter extends SubsystemBase implements Loggable{
     public ShooterDirection shooterDirection = ShooterDirection.FORWARD;
 
     private Shooter() {
+
         m_rotationMotor = new CANSparkMax(ShooterConstants.ROTATION_ID, MotorType.kBrushless);
         m_rotationMotor.restoreFactoryDefaults();
         m_rotationMotor.setInverted(ShooterConstants.ROTATION_INVERTED);
@@ -67,18 +71,22 @@ public class Shooter extends SubsystemBase implements Loggable{
         m_shortMotor.configPeakCurrentLimit(ShooterConstants.SHORT_CURRENT_LIMIT);
         m_shortMotor.configOpenloopRamp(0.2);
         m_shortMotor.setNeutralMode(NeutralMode.Coast);
+
+        PID s_rotationPID = new PID(ShooterConstants.ROTATION_KP, ShooterConstants.ROTATION_KI, ShooterConstants.ROTATION_KD, 0.008);
+        s_rotationPID.getOutputFromError(0, 0);
     }
 
     @Override
     public void periodic() {
         m_rotationPID.setReference(rotationReference, ControlType.kPosition);
-        
+        updateAngle();
+        shootShooter();
         m_shortMotor.set(shortSpeed);
         m_longMotor.set(longSpeed);
     }
 
     public void setAngle(double angle) {
-        setRotationReference(angle);
+        m_rotationMotor.set(s_rotationPID.getOutputFromError(angle, getRotationPosition()));
     }
 
     @Config.NumberSlider(defaultValue = ShooterConstants.INITIALIZED_ANGLE, max = ShooterConstants.ROTATION_LIMIT_FWD, min = -ShooterConstants.ROTATION_LIMIT_REV, blockIncrement = 1)
@@ -143,5 +151,31 @@ public class Shooter extends SubsystemBase implements Loggable{
 
     public enum ShooterDirection { //TODO base the direction on the RotationPosition ENUM - PODIUM_OUT, CHUTE = reverse, other = forward
         FORWARD, REVERSE; //TODO make this more clear - define forward and reverse for both motors to make more sense (eg both forward = both in the same direction, not out)
+    }
+    public void updateAngle(){ 
+        if(m_controller.getLeftY() == 0.1) {
+            setAngle(25);
+        }
+        else if(m_controller.getLeftY() == 0.3) {
+            setAngle(15.87);
+        }
+        else if(m_controller.getLeftY() == 0.485) {
+            setAngle(62);
+        }
+        else if(m_controller.getLeftY() == 0.8712) {
+            setAngle(27.56987456321);
+        }
+        
+    }
+
+    public void shootShooter() {
+        if(m_controller.getRightX()){
+            shortSpeed = MAX_ACCELERATION;
+            longSpeed = -MAX_ACCELERATION;
+        }
+        else {
+            shortSpeed = 0.007;
+            longSpeed = 0.03;
+        }
     }
 }
