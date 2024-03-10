@@ -16,12 +16,14 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.button.CommandJoystick;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriverConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Subsystems.Intake;
 import frc.robot.Subsystems.Shooter;
@@ -50,6 +52,8 @@ public class RobotContainer {
     private final GenericHID coDrive = new GenericHID(1); //TODO change to address axis if needed
     private final Trigger b1 = new JoystickButton(coDrive, 1); //TODO change to appropriate buttons
     private final Trigger b2 = new JoystickButton(coDrive, 2);
+    private final Trigger b3 = new JoystickButton(coDrive, 3); //intake
+    private final Trigger b4 = new JoystickButton(coDrive, 4); //outtake
 
     private AutoBuilder autoBuilder = new AutoBuilder();
     private final AutoBuilder otfBuilder = new AutoBuilder();
@@ -120,6 +124,10 @@ public class RobotContainer {
     b1.onTrue(Commands.runOnce(() -> s_shooter.setShortSpeed(ShooterConstants.SHOOT_SPEED)) //TODO fancy logic for turning off and on with one button
       .andThen(Commands.waitSeconds(0.5)) 
       .andThen(Commands.runOnce(() -> s_shooter.setLongSpeed(ShooterConstants.FEED_SPEED)))); //TODO fancy logic to deploy in different directions based on enum
+
+    b3.onTrue(Commands.runOnce(() -> s_intake.run())
+      .andThen(Commands.waitSeconds(IntakeConstants.intakeSeconds))
+      .andThen(Commands.runOnce(() -> s_intake.stop())));
 
   }
 
