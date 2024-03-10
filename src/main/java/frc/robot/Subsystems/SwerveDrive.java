@@ -1,6 +1,7 @@
 package frc.robot.Subsystems;
 
 import frc.robot.Constants;
+import frc.robot.Constants.DriverConstants;
 import frc.robot.Subsystems.swerve.SwerveConstants;
 import frc.robot.Subsystems.swerve.SwerveDriveDef;
 import frc.robot.util.LimelightHelpers;
@@ -25,7 +26,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Preferences;
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -67,9 +67,9 @@ public class SwerveDrive extends SubsystemBase {
         rollRotationController = new ProfiledPIDController(5.4/67, 0, 0, new TrapezoidProfile.Constraints(.7,.7));
         pitchRotationController = new ProfiledPIDController(5.4/67-.02, 0, 5.4/680*1.5, new TrapezoidProfile.Constraints(.7,.7));
         rotationController = new ProfiledPIDController(
-            Preferences.getDouble("pKPRotationController", SwerveConstants.P_ROTATION_CONTROLLER), 
-            Preferences.getDouble("pKIRotationController", SwerveConstants.I_ROTATION_CONTROLLER), 
-            Preferences.getDouble("pKDRotationController", SwerveConstants.D_ROTATION_CONTROLLER), 
+            SwerveConstants.P_ROTATION_CONTROLLER, 
+            SwerveConstants.I_ROTATION_CONTROLLER, 
+            SwerveConstants.D_ROTATION_CONTROLLER, 
             new TrapezoidProfile.Constraints(SwerveConstants.MAX_SPEED_RADIANSperSECOND, 5*Units.radiansToDegrees(SwerveConstants.MAX_SPEED_RADIANSperSECOND)));
         rotationController.enableContinuousInput(-180, 180);
         rotationController.setTolerance(2); //TODO might be a lot
@@ -97,7 +97,7 @@ public class SwerveDrive extends SubsystemBase {
         prevTime = Timer.getFPGATimestamp();
 
         robotPose = updateOdometry();
-        drawRobotOnField(m_field);
+        //drawRobotOnField(m_field);
     }
 
     public static SwerveDrive getInstance() {
@@ -113,8 +113,8 @@ public class SwerveDrive extends SubsystemBase {
                 double x = -(Math.abs(_x.getAsDouble()) < .1 ? 0: _x.getAsDouble());
                 double y = -(Math.abs(_y.getAsDouble()) < .1 ? 0: _y.getAsDouble());
                 double rot = -Math.pow((Math.abs(_rot.getAsDouble()) < .1 ? 0: _rot.getAsDouble()), 3);
-                double joystickDriveGovernor = Preferences.getDouble("pDriveGovernor", Constants.DriverConstants.DRIVE_GOVERNOR);
-                if(Preferences.getBoolean("pAcceInputs", Constants.DriverConstants.ACCELERATED_INPUTS)) {
+                double joystickDriveGovernor = DriverConstants.DRIVE_GOVERNOR;
+                if(DriverConstants.ACCELERATED_INPUTS) {
 
                 } else {
                     x = Math.signum(x) * Math.sqrt(Math.abs(x));
@@ -122,11 +122,18 @@ public class SwerveDrive extends SubsystemBase {
                     rot = Math.signum(rot) * Math.sqrt(Math.abs(rot));
                 }
                 setDriveSpeeds(new Translation2d(
-                    xLimiter.calculate(convertToMetersPerSecond(x)*joystickDriveGovernor),
-                    yLimiter.calculate(convertToMetersPerSecond(y)*joystickDriveGovernor)),
+                    convertToMetersPerSecond(x)*joystickDriveGovernor,
+                    convertToMetersPerSecond(y)*joystickDriveGovernor),
                     holdAngleEnabled ? updateRotationController() : convertToRadiansPerSecond(rot) * joystickDriveGovernor,
-                    Preferences.getBoolean("pFieldRelative", Constants.DriverConstants.FIELD_RELATIVE)); 
+                    Constants.DriverConstants.FIELD_RELATIVE); 
             }, this);
+    }
+
+    public Command testCommand() {
+        return Commands.run(() -> {
+            m_driveTrain.handBrakeX();
+        }
+        , this);
     }
 
     public double updateRotationController() {
@@ -291,7 +298,7 @@ public class SwerveDrive extends SubsystemBase {
         }
     }
 
-    public void activteHandBrake() {
+    public void activateHandBrake() {
         m_driveTrain.handBrakeX(); //TODO test also handBrake90
     }
 }

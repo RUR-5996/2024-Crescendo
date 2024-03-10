@@ -13,10 +13,10 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-
+import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
 
-public class Robot extends TimedRobot {
+public class Robot extends TimedRobot implements Loggable{
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
   private GenericEntry matchTimeEntry;
@@ -24,11 +24,12 @@ public class Robot extends TimedRobot {
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
+    Logger.configureLoggingAndConfig(this, false);
     matchTimeEntry = Shuffleboard.getTab("selector")
       .add("Match time", "")
       .withWidget(BuiltInWidgets.kTextView)
       .withProperties(Map.of("Width", 50, "Height", 12))
-      .withPosition(17, 2)
+      .withPosition(1, 1)
       .withSize(7,3)
       .getEntry();
   }
@@ -36,7 +37,7 @@ public class Robot extends TimedRobot {
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    io.github.oblarg.oblog.Logger.updateEntries();
+    Logger.updateEntries();
     matchTimeEntry.setString(String.format("%.2f", DriverStation.getMatchTime()));
   }
 

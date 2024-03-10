@@ -1,5 +1,9 @@
 package frc.robot.Subsystems;
 
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -11,23 +15,34 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
+import frc.robot.Subsystems.swerve.SwerveConstants;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
 public class Intake extends SubsystemBase implements Loggable {
-    private final CANSparkMax m_intakeMotor;
-    private final RelativeEncoder m_intakeEncoder;
+    private final TalonFX m_intakeMotor; //TODO change to TalonFX
     private double speed = 0;
     private boolean haveGamePiece = false;
     private final Debouncer m_debouncer = new Debouncer(0.1, DebounceType.kRising);
     private static Intake instance;
+    
+    TalonFXConfiguration intakeTalonConfig = new TalonFXConfiguration();
 
     private Intake() {
-        m_intakeMotor = new CANSparkMax(5, MotorType.kBrushless);
-        m_intakeMotor.restoreFactoryDefaults();
-        m_intakeMotor.setInverted(IntakeConstants.INVERTED_MOTOR);
-        m_intakeMotor.setIdleMode(IdleMode.kCoast);
-        m_intakeEncoder = m_intakeMotor.getEncoder();
+        m_intakeMotor = new TalonFX(IntakeConstants.INTAKE_ID);
+        m_intakeMotor.getConfigurator().refresh(intakeTalonConfig);
+        final Slot0Configs intakeMotorGains = new Slot0Configs();
+        
+        intakeMotorGains.kP = SwerveConstants.kP;
+        intakeMotorGains.kI = 0;
+        intakeMotorGains.kD = 0;
+        intakeMotorGains.kS = SwerveConstants.kS;
+        intakeMotorGains.kV = SwerveConstants.kV;
+
+        intakeTalonConfig.Slot0 = intakeMotorGains;
+        intakeTalonConfig.MotorOutput.Inverted = IntakeConstants.MOTOR_INVERTED;
+        intakeTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        m_intakeMotor.getConfigurator().apply(intakeTalonConfig);
     }
 
     public static Intake getInstance() {
@@ -38,11 +53,15 @@ public class Intake extends SubsystemBase implements Loggable {
     }
 
     public void onEnable() {
-        m_intakeMotor.setIdleMode(IdleMode.kBrake);
+        m_intakeMotor.getConfigurator().refresh(intakeTalonConfig);
+        intakeTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        m_intakeMotor.getConfigurator().apply(intakeTalonConfig);
     }
 
     public void onDisable() {
-        m_intakeMotor.setIdleMode(IdleMode.kCoast);
+        m_intakeMotor.getConfigurator().refresh(intakeTalonConfig);
+        intakeTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+        m_intakeMotor.getConfigurator().apply(intakeTalonConfig);
     }
 
     @Override
@@ -64,20 +83,20 @@ public class Intake extends SubsystemBase implements Loggable {
 
     @Log
     public double getMotorCurrent() {
-        return m_intakeMotor.getOutputCurrent();
+        return m_intakeMotor.getStatorCurrent().getValueAsDouble();
     }
 
     @Log
     public double getIntakePosition() {
-        return m_intakeEncoder.getPosition();
+        return m_intakeMotor.getPosition().getValueAsDouble();
     }
 
     public void resetIntakePosition() {
-        m_intakeEncoder.setPosition(0);
+        //m_intakeMotor.setPosition(0);
     }
 
     public void setIntakePosition(double position) {
-        m_intakeEncoder.setPosition(position);
+        //m_intakeMotor.set;
     }
 
     @Log

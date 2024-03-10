@@ -8,6 +8,8 @@ import com.revrobotics.CANSparkBase.IdleMode;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.RobotBase;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
@@ -18,11 +20,12 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityTorqueCurrentFOC;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-public class SwerveModule {
+public class SwerveModule implements Loggable {
 
     private StatusSignal<Double> m_drivePosition;
     private StatusSignal<Double> m_driveVelocity;
@@ -34,8 +37,8 @@ public class SwerveModule {
 
     TalonFXConfiguration driveTalonConfig = new TalonFXConfiguration();
     private SwerveModulePosition m_internalState = new SwerveModulePosition();
-    private VelocityTorqueCurrentFOC m_velocitySetter = new VelocityTorqueCurrentFOC(0);
-
+    //private VelocityTorqueCurrentFOC m_velocitySetter = new VelocityTorqueCurrentFOC(0);
+    private VelocityVoltage m_velocitySetter = new VelocityVoltage(0);
     public final SteerMotor steerMotor;
     public final DriveMotor driveMotor;
     public final Translation2d moduleXYTranslation;
@@ -80,9 +83,9 @@ public class SwerveModule {
         steerMotor.setInverted(steerMotor.kInverted);
         steerMotor.setIdleMode(IdleMode.kBrake);
         steerMotor.steerEncoder.setPositionConversionFactor(SwerveConstants.kSteerConversionFactor);
-        steerMotor.steerEncoder.setInverted(steerMotor.kInverted); //might need separate variable
-        steerMotor.testEncoder.setInverted(steerMotor.kInverted);
-        steerMotor.testEncoder.setPositionConversionFactor(SwerveConstants.kSteerConversionFactor);
+        //steerMotor.steerEncoder.setInverted(steerMotor.kInverted); //might need separate variable
+        //steerMotor.testEncoder.setInverted(steerMotor.kInverted);
+        //steerMotor.testEncoder.setPositionConversionFactor(SwerveConstants.kSteerConversionFactor);
         steerMotor.m_PidController.setP(steerMotor.kGains.kP);
         steerMotor.m_PidController.setI(steerMotor.kGains.kI);
         steerMotor.m_PidController.setD(steerMotor.kGains.kD);
@@ -127,8 +130,8 @@ public class SwerveModule {
     public SwerveModulePosition getPosition() {
         m_drivePosition.refresh();
         m_driveVelocity.refresh();
-        //m_steerPosition = steerMotor.steerEncoder.getPosition();
-        m_steerPosition = steerMotor.testEncoder.getPosition();
+        m_steerPosition = steerMotor.steerEncoder.getPosition();
+        //m_steerPosition = steerMotor.testEncoder.getPosition();
         m_steerVelocity = steerMotor.steerEncoder.getVelocity();
 
         double drive_rot = m_drivePosition.getValue() + (m_driveVelocity.getValue() * m_drivePosition.getTimestamp().getLatency());
@@ -139,10 +142,21 @@ public class SwerveModule {
         return m_internalState;
     }
 
+    @Log
+    public double getAbsolutePosition() {
+        return steerMotor.testEncoder.getPosition();
+    }
+
+    @Log
+    public double getRelativePosition() {
+        return steerMotor.steerEncoder.getPosition();
+    }
+
     public void setDesiredState(SwerveModuleState desiredState) {
         var optimized = SwerveModuleState.optimize(desiredState, m_internalState.angle);
 
-        double angleToSet = optimized.angle.getRotations();
+        double angleToSet = optimized.angle.getDegrees();
+        //setAngle(angleToSet);
         steerMotor.m_PidController.setReference(angleToSet, CANSparkMax.ControlType.kPosition);//snad
 
         double velocityToSet = optimized.speedMetersPerSecond * m_driveRotationsPerMeter;

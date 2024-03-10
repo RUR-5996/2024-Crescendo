@@ -5,7 +5,9 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkPIDController;
+import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkBase.SoftLimitDirection;
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
@@ -20,10 +22,10 @@ import io.github.oblarg.oblog.annotations.Config;
 
 public class Shooter extends SubsystemBase implements Loggable{
     private final CANSparkMax m_rotationMotor;
-    private final SparkAbsoluteEncoder m_rotationEncoder;
+    private final RelativeEncoder m_rotationEncoder;
     private final SparkPIDController m_rotationPID;
     private final WPI_TalonSRX m_shortMotor;
-    private final WPI_TalonSRX m_longMotor;
+    //private final WPI_TalonSRX m_longMotor;
     
     private static Shooter instance;
 
@@ -35,13 +37,14 @@ public class Shooter extends SubsystemBase implements Loggable{
     private Shooter() {
         m_rotationMotor = new CANSparkMax(ShooterConstants.ROTATION_ID, MotorType.kBrushless);
         m_rotationMotor.restoreFactoryDefaults();
+        m_rotationMotor.setIdleMode(IdleMode.kBrake);
         m_rotationMotor.setInverted(ShooterConstants.ROTATION_INVERTED);
         m_rotationMotor.setSoftLimit(SoftLimitDirection.kForward, ShooterConstants.ROTATION_LIMIT_FWD);
         m_rotationMotor.setSoftLimit(SoftLimitDirection.kReverse, ShooterConstants.ROTATION_LIMIT_REV);
         m_rotationMotor.setSmartCurrentLimit(ShooterConstants.ROTATION_CURRENT_LIMIT);
 
-        m_rotationEncoder = m_rotationMotor.getAbsoluteEncoder(Type.kDutyCycle);
-        m_rotationEncoder.setInverted(ShooterConstants.ROTATION_INVERTED);
+        m_rotationEncoder = m_rotationMotor.getEncoder();
+        //m_rotationEncoder.setInverted(ShooterConstants.ROTATION_INVERTED);
         m_rotationEncoder.setPositionConversionFactor(ShooterConstants.ROTATION_POSITION_FACTOR);
         m_rotationEncoder.setVelocityConversionFactor(ShooterConstants.ROTATION_VELOCITY_FACTOR);
 
@@ -54,13 +57,14 @@ public class Shooter extends SubsystemBase implements Loggable{
 
         m_rotationMotor.burnFlash(); //TODO copy setup into swerve
 
+        /*
         m_longMotor = new WPI_TalonSRX(ShooterConstants.LONG_ID);
         m_longMotor.configFactoryDefault();
         m_longMotor.setInverted(ShooterConstants.LONG_INVERTED);
         m_longMotor.configPeakCurrentLimit(ShooterConstants.LONG_CURRENT_LIMIT);
         m_longMotor.configOpenloopRamp(0.2);
         m_longMotor.setNeutralMode(NeutralMode.Coast);
-
+*/
         m_shortMotor = new WPI_TalonSRX(ShooterConstants.SHORT_ID);
         m_shortMotor.configFactoryDefault();
         m_shortMotor.setInverted(ShooterConstants.SHORT_INVERTED);
@@ -74,7 +78,7 @@ public class Shooter extends SubsystemBase implements Loggable{
         m_rotationPID.setReference(rotationReference, ControlType.kPosition);
         
         m_shortMotor.set(shortSpeed);
-        m_longMotor.set(longSpeed);
+        //m_longMotor.set(longSpeed);
     }
 
     public void setAngle(double angle) {

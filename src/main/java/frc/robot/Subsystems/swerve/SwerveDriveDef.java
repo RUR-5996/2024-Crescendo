@@ -71,17 +71,10 @@ public class SwerveDriveDef {
     }
 
     public void setToCoast() {
-        if(NeutralMode == NeutralModeValue.Brake &&
-        Math.abs(FLModule.driveMotor.getVelocity().getValue()) < 100 &&
-        Math.abs(FRModule.driveMotor.getVelocity().getValue()) < 100 &&
-        Math.abs(RLModule.driveMotor.getVelocity().getValue()) < 100 &&
-        Math.abs(RRModule.driveMotor.getVelocity().getValue()) < 100) {
-            FRModule.setModuleToCoast();
-            FLModule.setModuleToCoast();
-            RLModule.setModuleToCoast();
-            RRModule.setModuleToCoast();
-            NeutralMode = NeutralModeValue.Coast;
-        }
+        FRModule.setModuleToCoast();
+        FLModule.setModuleToCoast();
+        RLModule.setModuleToCoast();
+        RRModule.setModuleToCoast();
     }
 
     public void setToBrake() {

@@ -25,9 +25,12 @@ import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Subsystems.Intake;
 import frc.robot.Subsystems.Shooter;
+//import frc.robot.Subsystems.Intake;
+//import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.SwerveDrive;
 import frc.robot.Subsystems.swerve.SwerveConstants;
 import frc.robot.util.SendableChooserEnum;
+import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
 
 import java.io.File;
@@ -45,7 +48,7 @@ import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
 import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
-public class RobotContainer {
+public class RobotContainer implements Loggable{
     private final CommandXboxController xBox = new CommandXboxController(0);
     private final GenericHID coDrive = new GenericHID(1); //TODO change to address axis if needed
     private final Trigger b1 = new JoystickButton(coDrive, 1); //TODO change to appropriate buttons
@@ -64,14 +67,6 @@ public class RobotContainer {
 
 
   public RobotContainer() {
-
-    Preferences.initBoolean("pFieldRelative", DriverConstants.FIELD_RELATIVE); //TODO remove???
-    Preferences.initBoolean("pAccelInputs", DriverConstants.ACCELERATED_INPUTS);
-    Preferences.initDouble("pDriveGovernor", DriverConstants.DRIVE_GOVERNOR);
-    Preferences.initBoolean("pOptimizeSteering", SwerveConstants.OPTIMIZESTEERING);
-    Preferences.initDouble("pKPRotationController", SwerveConstants.P_ROTATION_CONTROLLER);
-    Preferences.initDouble("pKIRotationController", SwerveConstants.D_ROTATION_CONTROLLER);
-    Preferences.initDouble("pKDRotationController", SwerveConstants.I_ROTATION_CONTROLLER);
 
     Shuffleboard.getTab("pdp").add("PDP", pdp).withWidget(BuiltInWidgets.kPowerDistribution);
 
@@ -94,11 +89,7 @@ public class RobotContainer {
       s_drive);*/
 
     s_drive.setDefaultCommand(
-      s_drive.joystickDriveCommand(
-        () -> xBox.getLeftY(),
-        () -> xBox.getLeftX(),
-        xBox::getRightX)
-      .withName("DefaultDrive"));
+      s_drive.joystickDriveCommand(xBox::getLeftX, xBox::getLeftY, xBox::getRightX));
 
     Logger.configureLoggingAndConfig(this, false);
 
@@ -107,7 +98,7 @@ public class RobotContainer {
   private void configureBindings() {
 
     //disable sequence
-    new Trigger(DriverStation::isDisabled)
+    /*new Trigger(DriverStation::isDisabled)
       .onTrue(Commands.waitSeconds(5)
         .andThen(Commands.repeatingSequence(Commands.runOnce(s_drive::setToCoast)).ignoringDisable(true)
           .withName("setToCoast")));
@@ -116,11 +107,11 @@ public class RobotContainer {
     new Trigger(DriverStation::isEnabled)
       .onTrue(Commands.runOnce(s_drive::setToBrake).ignoringDisable(true)
       .withName("setToBreak"));
-
-    b1.onTrue(Commands.runOnce(() -> s_shooter.setShortSpeed(ShooterConstants.SHOOT_SPEED)) //TODO fancy logic for turning off and on with one button
+*/
+    /*b1.onTrue(Commands.runOnce(() -> s_shooter.setShortSpeed(ShooterConstants.SHOOT_SPEED)) //TODO fancy logic for turning off and on with one button
       .andThen(Commands.waitSeconds(0.5)) 
       .andThen(Commands.runOnce(() -> s_shooter.setLongSpeed(ShooterConstants.FEED_SPEED)))); //TODO fancy logic to deploy in different directions based on enum
-
+*/
   }
 
   private void loadPaths() {
@@ -138,7 +129,7 @@ public class RobotContainer {
       s_drive);
 
     HashMap<String, PathConstraints> constraintsOverride = new HashMap<>();
-
+/*
     List<File> files = List.of(
       Objects.requireNonNull(new File(Filesystem.getDeployDirectory(), "pathplanner")
         .listFiles((dir, name) -> name.endsWith(".path"))));
@@ -151,6 +142,7 @@ public class RobotContainer {
     }
 
     autoSelect.setDefaultOption(files.get(0).getName().split("\\.")[0], PathPlannerPath.fromPathFile(files.get(0).getName()));
+  */
   }
 
   public Command getAutonomousCommand() {
