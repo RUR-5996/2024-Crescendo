@@ -13,12 +13,14 @@ class LimelightNetwork{
     NetworkTableEntry tX;
     NetworkTableEntry tY;
     NetworkTableEntry tA;
+    NetworkTableEntry tId;
     NetworkTableEntry tV;
     public NetworkTableEntry pipeline;
 
     public double X = 0.0;
     public double Y = 0.0;
     public double A = 0.0;
+    public double Id = 0;
     public boolean V = false;
 
     public LimelightNetwork(String key){
@@ -28,6 +30,7 @@ class LimelightNetwork{
         tY = limelightTable.getEntry("ty");
         tA = limelightTable.getEntry("ta");
         tV = limelightTable.getEntry("tv");
+        tId = limelightTable.getEntry("tid");
         pipeline = limelightTable.getEntry("pipeline");
 
         pipeline.setDouble(0);
@@ -38,6 +41,7 @@ class LimelightNetwork{
         Y = tY.getDouble(0.0);
         A = tA.getDouble(0.0);
         V = tV.getDouble(0.0) == 1.0;
+        Id = tId.getDouble(0.0);
     }
     
 }
