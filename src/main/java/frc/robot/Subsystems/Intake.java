@@ -14,6 +14,65 @@ import frc.robot.Constants.IntakeConstants;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
+import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import java.util.function.DoubleSupplier;
+
+
+public class Intake extends SubsystemBase implements Loggable{
+    private static final Intake instance = new Intake();
+    private final TalonFX m_intakeMotor = new TalonFX(IntakeConstants.intakeMotorDeviceId, "0");
+    private final DutyCycleOut m_dutyCycleOut = new DutyCycleOut(0, true, false, false, false);
+    private double dutyCycle = .8;
+
+    private Intake() {
+        m_intakeMotor.getConfigurator().apply(new TalonFXConfiguration()
+            .withMotorOutput(new MotorOutputConfigs()
+            .withNeutralMode(NeutralModeValue.Coast)
+            .withInverted(InvertedValue.CounterClockwise_Positive)));
+        m_intakeMotor.setNeutralMode(NeutralModeValue.Coast);
+        super.setDefaultCommand(stop());
+
+    }
+
+    public static Intake getInstance() {
+        return instance;
+    }
+
+    @Override
+    public void periodic() {
+        // This method will be called once per scheduler run
+    }
+
+    public void setDutyCycle(double dutyCycle) {
+        this.dutyCycle = dutyCycle;
+    }
+
+
+    public Command dutyCycleCommand(DoubleSupplier _dutyCycle) {
+        return startEnd(() -> m_intakeMotor.setControl(m_dutyCycleOut.withOutput(_dutyCycle.getAsDouble())), () -> {
+        });
+    }
+
+    public Command outtake() {
+        return dutyCycleCommand(() -> -dutyCycle);
+    }
+
+    public Command run() {
+        return dutyCycleCommand(() -> dutyCycle);
+    }
+
+    public Command stop() {
+        return dutyCycleCommand(() -> 0);
+    }
+}
+
+/*
 public class Intake extends SubsystemBase implements Loggable {
     private final CANSparkMax m_intakeMotor;
     private final RelativeEncoder m_intakeEncoder;
@@ -99,3 +158,4 @@ public class Intake extends SubsystemBase implements Loggable {
     //TODO maybe move the have gamepiece to shooter and measure current + timing there
     
 }
+*/

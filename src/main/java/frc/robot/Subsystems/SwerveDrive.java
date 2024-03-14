@@ -38,20 +38,20 @@ import io.github.oblarg.oblog.annotations.Config;
 import io.github.oblarg.oblog.annotations.Log;
 
 public class SwerveDrive extends SubsystemBase {
-    SwerveDriveDef m_driveTrain;
+    static SwerveDriveDef m_driveTrain;
     Pose2d prevRobotPose = new Pose2d();
-    Pose2d robotPose = new Pose2d();
+    static Pose2d robotPose = new Pose2d();
     Pose2d visionPoseFront = new Pose2d();
     double deltaTime = 0;
     double prevTime = 0;
     AHRS gyro;
-    SwerveDrivePoseEstimator m_odometry;
+    static SwerveDrivePoseEstimator m_odometry;
     double holdAngle = 0;
     boolean holdAngleEnabled = false;
     ProfiledPIDController rotationController, rollRotationController, pitchRotationController;
     double rotationControllerOutput;
     SlewRateLimiter xLimiter, yLimiter, rotLimiter;
-    ChassisSpeeds chassisSpeeds;
+    static ChassisSpeeds chassisSpeeds;
 
     boolean aprilTagDetected = false;
 
@@ -144,7 +144,7 @@ public class SwerveDrive extends SubsystemBase {
         return new Rotation2d(Math.toRadians(gyro.getAngle())); //TODO check if this works
     }
 
-    public Pose2d getPose() {
+    public static Pose2d getPose() {
         return robotPose;
     }
 
@@ -157,7 +157,7 @@ public class SwerveDrive extends SubsystemBase {
         return getRobotAngle().getDegrees();
     }
 
-    public ChassisSpeeds getChassisSpeeds() {
+    public static ChassisSpeeds getChassisSpeeds() {
         return chassisSpeeds;
     }
 
@@ -196,19 +196,19 @@ public class SwerveDrive extends SubsystemBase {
         holdAngle = input;
     }
 
-    public void resetOdometry(Pose2d newPose) {
+    public static void resetOdometry(Pose2d newPose) {
         m_odometry.resetPosition(newPose.getRotation(), m_driveTrain.getModulePositions(), newPose);
     }
 
-    public SwerveDriveKinematics getKinematics() {
+    public static SwerveDriveKinematics getKinematics() {
         return m_driveTrain.m_kinematics;
     }
 
-    public void setAutoModuleStates(SwerveModuleState[] states) {
+    public static void setAutoModuleStates(SwerveModuleState[] states) {
         m_driveTrain.setModuleSpeeds(states);
     }
 
-    public void setAutoChassisSpeeds(ChassisSpeeds speeds) {
+    public static void setAutoChassisSpeeds(ChassisSpeeds speeds) {
         setAutoModuleStates(getKinematics().toSwerveModuleStates(speeds));
     }
 

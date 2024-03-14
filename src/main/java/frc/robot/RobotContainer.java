@@ -79,7 +79,7 @@ public class RobotContainer {
 
     Shuffleboard.getTab("pdp").add("PDP", pdp).withWidget(BuiltInWidgets.kPowerDistribution);
 
-    loadPaths();
+    //loadPaths();
     configureBindings();
 
     Shuffleboard.getTab("selectors")
@@ -131,6 +131,7 @@ public class RobotContainer {
 
   }
 
+  /*
   private void loadPaths() {
     autoBuilder.configureHolonomic( //TODO fix this shit
       s_drive::getOdometryPose,
@@ -168,5 +169,5 @@ public class RobotContainer {
   public enum PickupLocation {
     GROUND, CHUTE
   }
-
+*/
 }

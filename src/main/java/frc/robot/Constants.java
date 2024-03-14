@@ -22,10 +22,12 @@ public class Constants {
         public static final double MAX_ROT_VELOCITY = 0; //TODO determine
     }
     public static final class IntakeConstants {
+        public static final int intakeMotorDeviceId = 10;
         public static final boolean INVERTED_MOTOR = false; //up is positive, down is negative
         public static final double INTAKE_DISTANCE = 100; //TODO make correct estimate
         public static final double INTAKE_SPEED = 0.7; //TODO adjust
         public static final double MAX_SPEED = 0.9;
+        public static final double intakeSeconds = 1;
     }
     public static final class ShooterConstants {
         public static final double INITIALIZED_ANGLE = 0; //TODO measure and correct
