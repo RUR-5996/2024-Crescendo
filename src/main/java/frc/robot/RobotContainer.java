@@ -131,9 +131,9 @@ public class RobotContainer {
 
   }
 
-  /*
+  
   private void loadPaths() {
-    autoBuilder.configureHolonomic( //TODO fix this shit
+    AutoBuilder.configureHolonomic( //TODO fix this shit
       s_drive::getOdometryPose,
       s_drive::resetOdometry,
       s_drive::getChassisSpeeds,
@@ -169,5 +169,4 @@ public class RobotContainer {
   public enum PickupLocation {
     GROUND, CHUTE
   }
-*/
 }

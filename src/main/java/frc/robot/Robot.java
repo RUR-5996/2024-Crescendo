@@ -13,14 +13,13 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Commands.AutonomousCommands;
+
 import io.github.oblarg.oblog.Logger;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
   private GenericEntry matchTimeEntry;
-  private AutonomousCommands m_AutonomousCommands;
 
   @Override
   public void robotInit() {
@@ -55,7 +54,6 @@ public class Robot extends TimedRobot {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
     m_autonomousCommand.schedule();
-    
   }
 
   @Override

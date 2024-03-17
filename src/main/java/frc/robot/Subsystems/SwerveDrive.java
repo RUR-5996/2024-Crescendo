@@ -157,7 +157,7 @@ public class SwerveDrive extends SubsystemBase {
         return getRobotAngle().getDegrees();
     }
 
-    public static ChassisSpeeds getChassisSpeeds() {
+    public ChassisSpeeds getChassisSpeeds() {
         return chassisSpeeds;
     }
 
@@ -196,7 +196,7 @@ public class SwerveDrive extends SubsystemBase {
         holdAngle = input;
     }
 
-    public static void resetOdometry(Pose2d newPose) {
+    public void resetOdometry(Pose2d newPose) {
         m_odometry.resetPosition(newPose.getRotation(), m_driveTrain.getModulePositions(), newPose);
     }
 
@@ -208,7 +208,7 @@ public class SwerveDrive extends SubsystemBase {
         m_driveTrain.setModuleSpeeds(states);
     }
 
-    public static void setAutoChassisSpeeds(ChassisSpeeds speeds) {
+    public void setAutoChassisSpeeds(ChassisSpeeds speeds) {
         setAutoModuleStates(getKinematics().toSwerveModuleStates(speeds));
     }
 
