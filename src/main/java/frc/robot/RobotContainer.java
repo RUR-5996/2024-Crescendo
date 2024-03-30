@@ -5,6 +5,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -25,7 +26,10 @@ import frc.robot.Subsystems.SwerveDrive;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
 
+import java.io.File;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -122,7 +126,7 @@ public class RobotContainer implements Loggable {
   }
 
   private void loadPaths() {
-    autoBuilder.configureHolonomic( //TODO fix this shit
+    AutoBuilder.configureHolonomic(
       SWERVE::getOdometryPose,
       SWERVE::resetOdometry,
       SWERVE::getChassisSpeeds,
@@ -135,7 +139,7 @@ public class RobotContainer implements Loggable {
       },
       SWERVE);
     HashMap<String, PathConstraints> constraintsOverride = new HashMap<>();
-/*
+
     List<File> files = List.of(
       Objects.requireNonNull(new File(Filesystem.getDeployDirectory(), "pathplanner")
         .listFiles((dir, name) -> name.endsWith(".path"))));
@@ -148,7 +152,7 @@ public class RobotContainer implements Loggable {
     }
 
     autoSelect.setDefaultOption(files.get(0).getName().split("\\.")[0], PathPlannerPath.fromPathFile(files.get(0).getName()));
-*/
+
   }
 
   public void periodic() {
