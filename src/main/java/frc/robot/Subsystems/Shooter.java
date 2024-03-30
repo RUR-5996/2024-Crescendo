@@ -40,8 +40,6 @@ public class Shooter extends SubsystemBase implements Loggable {
 
     AnalogEncoder m_encoder = new AnalogEncoder(new AnalogInput(0));
 
-    //JoystickButton b8 = new JoystickButton(sController, 8); //TODO nepouzivat na soutez, jen na testing
-
     private static Shooter instance;
 
     private TalonFXConfiguration shooterTalonConfig = new TalonFXConfiguration();
@@ -82,9 +80,9 @@ public class Shooter extends SubsystemBase implements Loggable {
         m_rotationPID.setP(ShooterConstants.ROTATION_KP);
         m_rotationPID.setI(ShooterConstants.ROTATION_KI);
         m_rotationPID.setD(ShooterConstants.ROTATION_KD);
-        m_rotationPID.setOutputRange(-0.3, 0.3); //TODO probably less
+        m_rotationPID.setOutputRange(-0.3, 0.3);
 
-        m_rotationMotor.burnFlash(); //TODO copy setup into swerve
+        m_rotationMotor.burnFlash();
 
         m_shortMotor = new WPI_TalonSRX(ShooterConstants.SHORT_ID);
         m_shortMotor.configFactoryDefault();
@@ -256,6 +254,10 @@ public class Shooter extends SubsystemBase implements Loggable {
             state = ShooterState.HOME; //TODO test TRAP. If it works, set this state to 180 offset to point up
             setShooterAngle(0);
         });
+    }
+
+    public double calculateSpeakerAngle(double dist) { //TODO test with odometry, create line function
+        return 0;
     }
 
     public void stopShooter() {

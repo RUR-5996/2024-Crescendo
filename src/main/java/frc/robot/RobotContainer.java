@@ -38,9 +38,7 @@ import com.pathplanner.lib.path.PathPlannerPath;
 
 public class RobotContainer implements Loggable {
     private final CommandXboxController xBox = new CommandXboxController(0);
-    private final GenericHID coDrive = new GenericHID(1); //TODO change to address axis if needed
-    //private final Trigger b1 = new JoystickButton(coDrive, 1); //TODO change to appropriate buttons
-    //private final Trigger b2 = new JoystickButton(coDrive, 2);
+    private final GenericHID coDrive = new GenericHID(1); //TODO test if this registeres correctly
     private final Trigger b1 = new JoystickButton(coDrive, 1);
     private final Trigger b2 = new JoystickButton(coDrive, 2);
     private final Trigger b3 = new JoystickButton(coDrive, 3);
@@ -53,9 +51,6 @@ public class RobotContainer implements Loggable {
     private final Trigger b10 = new JoystickButton(coDrive, 10);
     private final Trigger b11 = new JoystickButton(coDrive, 11);
     private final Trigger b12 = new JoystickButton(coDrive, 12);
-
-    private static AutoBuilder autoBuilder = new AutoBuilder();
-    private HashMap<String, Command> eventMap = new HashMap<>();
 
     private final SendableChooser<PathPlannerPath> autoSelect = new SendableChooser<>();
 
@@ -162,7 +157,7 @@ public class RobotContainer implements Loggable {
   }
 
   public Command getAutonomousCommand() {
-    return autoBuilder.followPath(autoSelect.getSelected());
+    return AutoBuilder.followPath(autoSelect.getSelected());
   }
  
   public BooleanSupplier isEndgame() {

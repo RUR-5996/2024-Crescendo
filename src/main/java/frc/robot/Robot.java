@@ -95,7 +95,7 @@ public class Robot extends TimedRobot implements Loggable{
   }
 
   @Override
-  public void teleopPeriodic() {
+  public void teleopPeriodic() { //TODO find out, how the periodic function works in command based
     /*SWERVE.periodic();
     SHOOTER.periodic();
     INTAKE.periodic();

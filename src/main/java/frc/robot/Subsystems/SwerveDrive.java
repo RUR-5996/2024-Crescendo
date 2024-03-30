@@ -15,6 +15,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -156,13 +157,21 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                 break;
             case "LOADING_STATION":
                 setHoldAngleFlag(true);
-                setHoldAngle(-120); //TODO add statement to mirror by alliance
+                if(isRed()) {
+                    setHoldAngle(-120);
+                } else {
+                    setHoldAngle(120);
+                }
                 setNoteControllerFlag(false);
                 setTagControllerFlag(true);
                 break;
             case "AMP":
                 setHoldAngleFlag(true);
-                setHoldAngle(90); //TODO add statement to mirror by alliance
+                if(isRed()) {
+                    setHoldAngle(90);
+                } else {
+                    setHoldAngle(-90);
+                }
                 setNoteControllerFlag(false);
                 setTagControllerFlag(true);
                 break;
@@ -176,7 +185,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                 setNoteControllerFlag(false);
                 setTagControllerFlag(true);
                 break;
-            case "NULL": //TODO make sure that in error case, the state getter function returns "NULL"
+            case "NULL":
                 setHoldAngleFlag(false);
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
@@ -379,7 +388,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                 states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d()));
             }
 
-            SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveConstants.MAX_SPEED_METERSperSECOND); //konecne funguje
+            SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveConstants.MAX_SPEED_METERSperSECOND);
 
             DRIVETRAIN.setModuleSpeeds(states);
         });
@@ -393,29 +402,16 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         });
     }
 
-    /**public static void assistedDrive() {
-        pid.setOffset(LimelightAiming.tapeLimelight1.X);
-
-        ySpeed = deadzone(controller.getLeftY()) * SwerveDef.MAX_SPEED_MPS * SwerveDef.DRIVE_COEFFICIENT;
-        xSpeed = pid.pidGet();
-        rotation = deadzone(controller.getRightX()) * SwerveDef.MAX_SPEED_RADPS * SwerveDef.TURN_COEFFICIENT;
-
-        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed, xSpeed, rotation, SwerveDef.gyro.getRotation2d()));
-
-        SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveDef.MAX_SPEED_MPS);
-
-        SwerveDef.flModule.setState(states[0]);
-        SwerveDef.frModule.setState(states[1]);
-        SwerveDef.rlModule.setState(states[2]);
-        SwerveDef.rrModule.setState(states[3]);
-    }*/
-
     public double deadzone(double input) { //TODO prepsat inline
         if (Math.abs(input) < 0.2) {
             return 0;
         } else {
             return input;
         }
+    }
+
+    public boolean isRed() {
+        return DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
     }
 
     @Config.ToggleButton(defaultValue = false, tabName = "robotMain", columnIndex = 2, rowIndex = 0, width = 2, height = 2)
