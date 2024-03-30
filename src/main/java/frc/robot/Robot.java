@@ -8,11 +8,18 @@ import java.util.Map;
 
 import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Subsystems.Climber;
+import frc.robot.Subsystems.Intake;
+import frc.robot.Subsystems.Shooter;
+import frc.robot.Subsystems.SwerveDrive;
+import frc.robot.Subsystems.swerve.DriveTrain;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
 
@@ -20,6 +27,14 @@ public class Robot extends TimedRobot implements Loggable{
   private Command m_autonomousCommand;
   private RobotContainer m_robotContainer;
   private GenericEntry matchTimeEntry;
+
+  public static SwerveDrive SWERVE;
+  public static Shooter SHOOTER;
+  DriveTrain DRIVETRAIN;
+  Intake INTAKE;
+  Climber CLIMBER;
+  public static XboxController controller = new XboxController(0);
+  public static GenericHID sController = new GenericHID(1);
 
   @Override
   public void robotInit() {
@@ -32,6 +47,14 @@ public class Robot extends TimedRobot implements Loggable{
       .withPosition(1, 1)
       .withSize(7,3)
       .getEntry();
+
+    SHOOTER = Shooter.getInstance();
+    SWERVE = SwerveDrive.getInstance();
+    DRIVETRAIN = DriveTrain.getInstance();
+    INTAKE = Intake.getInstance();
+    CLIMBER = Climber.getInstance();
+      
+    Logger.configureLoggingAndConfig(this, false);
   }
 
   @Override
@@ -72,7 +95,12 @@ public class Robot extends TimedRobot implements Loggable{
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    /*SWERVE.periodic();
+    SHOOTER.periodic();
+    INTAKE.periodic();
+    CLIMBER.periodic();*/
+  }
 
   @Override
   public void teleopExit() {}

@@ -1,304 +1,447 @@
 package frc.robot.Subsystems;
 
-import frc.robot.Constants;
-import frc.robot.Constants.DriverConstants;
-import frc.robot.Subsystems.swerve.SwerveConstants;
-import frc.robot.Subsystems.swerve.SwerveDriveDef;
-import frc.robot.util.LimelightHelpers;
-import frc.robot.util.LimelightPose2d;
-
 import java.util.function.DoubleSupplier;
 
 import com.kauailabs.navx.frc.AHRS;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.math.trajectory.TrapezoidProfile.State;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants.DriverConstants;
+import frc.robot.Constants.SwerveConstants;
+import frc.robot.Subsystems.swerve.DriveTrain;
+import frc.robot.Subsystems.swerve.SwerveDef;
+import frc.robot.util.LimelightHelpers;
+import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Config;
 import io.github.oblarg.oblog.annotations.Log;
 
-public class SwerveDrive extends SubsystemBase {
-    SwerveDriveDef m_driveTrain;
-    Pose2d prevRobotPose = new Pose2d();
-    Pose2d robotPose = new Pose2d();
-    Pose2d visionPoseFront = new Pose2d();
+@SuppressWarnings("removal")
+public class SwerveDrive extends SubsystemBase implements Loggable{
+
+    //single instance
+    private static SwerveDrive SWERVE;
+
+    //control variables
+    DriveTrain DRIVETRAIN;
+    Shooter SHOOTER;
+
+    PIDController tagController;
+    PIDController noteController;
+
+    double xSpeed = 0;
+    double ySpeed = 0;
+    double rotation = 0;
+    double holdAngle = 0;
+    double defaultAngle = 0;
+    double rotationControllerOutput;
     double deltaTime = 0;
     double prevTime = 0;
-    AHRS gyro;
-    SwerveDrivePoseEstimator m_odometry;
-    double holdAngle = 0;
+    double tagControllerOutput;
+    double noteControllerOutput;
+
+    boolean fieldRelative = true; 
+    boolean assistedDrive = false;
+    boolean rampToggle = false;
+    boolean slowmode = false;
+    boolean aprilTagDetected = false;
     boolean holdAngleEnabled = false;
-    ProfiledPIDController rotationController, rollRotationController, pitchRotationController;
-    double rotationControllerOutput;
-    SlewRateLimiter xLimiter, yLimiter, rotLimiter;
+    boolean tagControllerEnabled = false;
+    boolean noteControllerEnabled = false;
+
+    Pose2d robotPose = new Pose2d();
+    Pose2d prevRobotPose = new Pose2d();
+
     ChassisSpeeds chassisSpeeds;
 
-    boolean aprilTagDetected = false;
+    SwerveDrivePoseEstimator m_odometry;
 
-    public Field2d m_field;
-    public double [] akitPose = {0, 0, 0};
-    private static SwerveDrive instance;
+    public static AHRS gyro = SwerveDef.gyro;
 
-    private SwerveDrive() {
-        //might be for ramp 2023??
-        rotLimiter = new SlewRateLimiter(4.5*4*2); //??
-        xLimiter = new SlewRateLimiter(60, -1000000000, 0);
-        yLimiter = new SlewRateLimiter(60, -1000000000, 0);
-        rollRotationController = new ProfiledPIDController(5.4/67, 0, 0, new TrapezoidProfile.Constraints(.7,.7));
-        pitchRotationController = new ProfiledPIDController(5.4/67-.02, 0, 5.4/680*1.5, new TrapezoidProfile.Constraints(.7,.7));
-        rotationController = new ProfiledPIDController(
-            SwerveConstants.P_ROTATION_CONTROLLER, 
-            SwerveConstants.I_ROTATION_CONTROLLER, 
-            SwerveConstants.D_ROTATION_CONTROLLER, 
-            new TrapezoidProfile.Constraints(SwerveConstants.MAX_SPEED_RADIANSperSECOND, 5*Units.radiansToDegrees(SwerveConstants.MAX_SPEED_RADIANSperSECOND)));
-        rotationController.enableContinuousInput(-180, 180);
-        rotationController.setTolerance(2); //TODO might be a lot
-        gyro = new AHRS(SPI.Port.kMXP);
+    SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
+
+    PIDController angleHoldController = new PIDController(0.01, 0, 0); // edit the vals
+
+    PIDController rotationController;
+
+    //JoystickButton b8 = new JoystickButton(sController, 1); //TODO presunout do nejaky ButtonMapy
+    //JoystickButton b9 = new JoystickButton(sController, 8); //TODO premistit
+
+    //assistPID pid = new assistPID(0.1, 0, 0, 0);
+
+    /**
+     * Function for getting the single instance of this class
+     * @return SwerveDrive instance
+     */
+    public static SwerveDrive getInstance() {
+        if(SWERVE == null) {
+            SWERVE = new SwerveDrive();
+        }
+        return SWERVE;
+    }
+
+    /**
+     * Function for setting up the SwerveDrive object
+     */
+    public SwerveDrive() {
+
+        DRIVETRAIN = DriveTrain.getInstance();
+
         gyro.reset();
         gyro.setAngleAdjustment(0);
 
-        m_driveTrain = new SwerveDriveDef();
-        m_field = new Field2d();
-
         m_odometry = new SwerveDrivePoseEstimator(
-            m_driveTrain.m_kinematics,
-            getRobotAngle(),
-            m_driveTrain.getModulePositions(),
+            DRIVETRAIN.swerveKinematics,
+            getHeading(),
+            DRIVETRAIN.getModulePositions(),
             robotPose,
             VecBuilder.fill(0.001, 0.001, Units.degreesToRadians(0.1)),
             VecBuilder.fill(0.01, 0.01, Units.degreesToRadians(10)));
 
+        setFieldOriented();
+        angleHoldController.disableContinuousInput();
+        angleHoldController.setTolerance(Math.toRadians(2)); // the usual drift
+
+        rotationController = new PIDController(
+            SwerveConstants.P_ROTATION_CONTROLLER, 
+            SwerveConstants.I_ROTATION_CONTROLLER, 
+            SwerveConstants.D_ROTATION_CONTROLLER);
+        rotationController.enableContinuousInput(-180, 180);
+        rotationController.setTolerance(2);
+
+        tagController  = new PIDController(0.1, 0, 0);
+        tagController.setTolerance(1);
+        noteController = new PIDController(0.1, 0, 0);
+        noteController.setTolerance(1);
+
     }
 
+    /**
+     * Function with the decision tree for driving the chassis
+     */
     @Override
     public void periodic() {
-        prevRobotPose = m_odometry.getEstimatedPosition();
+
         deltaTime = Timer.getFPGATimestamp() - prevTime;
         prevTime = Timer.getFPGATimestamp();
 
+        prevRobotPose = m_odometry.getEstimatedPosition();
         robotPose = updateOdometry();
-        //drawRobotOnField(m_field);
+
     }
 
-    public static SwerveDrive getInstance() {
-        if(instance == null) {
-            instance = new SwerveDrive();
-        }
-        return instance;
-    }
-
-    public Command joystickDriveCommand(DoubleSupplier _x, DoubleSupplier _y, DoubleSupplier _rot) {
-        return Commands.run(
-            () -> {
-                double x = -(Math.abs(_x.getAsDouble()) < .1 ? 0: _x.getAsDouble());
-                double y = -(Math.abs(_y.getAsDouble()) < .1 ? 0: _y.getAsDouble());
-                double rot = -Math.pow((Math.abs(_rot.getAsDouble()) < .1 ? 0: _rot.getAsDouble()), 3);
-                double joystickDriveGovernor = DriverConstants.DRIVE_GOVERNOR;
-                if(DriverConstants.ACCELERATED_INPUTS) {
-
-                } else {
-                    x = Math.signum(x) * Math.sqrt(Math.abs(x));
-                    y = Math.signum(y) * Math.sqrt(Math.abs(y));
-                    rot = Math.signum(rot) * Math.sqrt(Math.abs(rot));
-                }
-                setDriveSpeeds(new Translation2d(
-                    convertToMetersPerSecond(x)*joystickDriveGovernor,
-                    convertToMetersPerSecond(y)*joystickDriveGovernor),
-                    holdAngleEnabled ? updateRotationController() : convertToRadiansPerSecond(rot) * joystickDriveGovernor,
-                    Constants.DriverConstants.FIELD_RELATIVE); 
-            }, this);
-    }
-
-    public Command testCommand() {
-        return Commands.run(() -> {
-            m_driveTrain.handBrakeX();
-        }
-        , this);
-    }
-
-    public double updateRotationController() {
-        rotationControllerOutput = rotationController.calculate(
-            robotPose.getRotation().getRadians(),
-            new State(holdAngle, 0.0));
-        return rotationControllerOutput;
-    }
-
-    public boolean getAtGoal() {
-        return rotationController.atGoal();
-    }
-
-    public Rotation2d getRobotAngle() {
-        return new Rotation2d(Math.toRadians(gyro.getAngle())); //TODO check if this works
-    }
-
-    public Pose2d getPose() {
-        return robotPose;
+    public Command configState(String shooterStateName) {
+        return Commands.runOnce(() ->  {switch(shooterStateName) {
+            case "HOME":
+                setHoldAngleFlag(false);
+                setNoteControllerFlag(false);
+                setTagControllerFlag(false);
+                break;
+            case "INTAKE":
+                setHoldAngleFlag(false);
+                setNoteControllerFlag(true);
+                setTagControllerFlag(false);
+                break;
+            case "LOADING_STATION":
+                setHoldAngleFlag(true);
+                setHoldAngle(-120); //TODO add statement to mirror by alliance
+                setNoteControllerFlag(false);
+                setTagControllerFlag(true);
+                break;
+            case "AMP":
+                setHoldAngleFlag(true);
+                setHoldAngle(90); //TODO add statement to mirror by alliance
+                setNoteControllerFlag(false);
+                setTagControllerFlag(true);
+                break;
+            case "SPEAKER_FRONT":
+                setHoldAngleFlag(false);
+                setNoteControllerFlag(false);
+                setTagControllerFlag(true);
+                break;
+            case "SPEAKER_BACK":
+                setHoldAngleFlag(false);
+                setNoteControllerFlag(false);
+                setTagControllerFlag(true);
+                break;
+            case "NULL": //TODO make sure that in error case, the state getter function returns "NULL"
+                setHoldAngleFlag(false);
+                setNoteControllerFlag(false);
+                setTagControllerFlag(false);
+                break;
+        }});
+    }   
+    
+    public Command toggleSlowMode() {
+        return Commands.runOnce(() -> {slowmode = !slowmode;});
     }
 
     @Log
-    public double odometryDegrees() {
+    public double updateRotationController() {
+        rotationControllerOutput = rotationController.calculate(
+            getOdometryDegrees(),
+            holdAngle);
+        rotationControllerOutput = MathUtil.clamp(rotationControllerOutput, -1, 1);
+        return -rotationControllerOutput * SwerveConstants.MAX_SPEED_RADIANSperSECOND;
+    }
+
+    @Log
+    public double updateTagController() {
+        boolean seeTag = LimelightHelpers.getTV("zadni");
+        if(seeTag) {
+            double tagPosition = LimelightHelpers.getTX("zadni");
+            tagControllerOutput = tagController.calculate(tagPosition, 0);
+            tagControllerOutput = MathUtil.clamp(tagControllerOutput, -1, 1);
+            return tagControllerOutput * SwerveConstants.MAX_SPEED_METERSperSECOND;
+        } else {
+            return 2;
+        }
+    }
+
+    @Log
+    public double updateNoteController() { 
+        //TODO aligns robot in x axis (robot relative). Might want to change to rotation but this should be easier for the drivers since they control only 1 axis (rotation shouldn|t be necessary)
+        boolean seeNote = LimelightHelpers.getTV("predni");
+        if(seeNote) {
+            double notePosition = LimelightHelpers.getTX("predni");
+            noteControllerOutput = noteController.calculate(notePosition, 0);
+            noteControllerOutput = MathUtil.clamp(noteControllerOutput, -1, 1);
+            return noteControllerOutput * SwerveConstants.MAX_SPEED_METERSperSECOND;
+        } else {
+            return 2;
+        }
+    }
+
+    public Pose2d updateOdometry() {
+        return m_odometry.update(getHeading(), DRIVETRAIN.getModulePositions());
+    }
+
+    public void resetOdometry(Pose2d newPose) {
+        m_odometry.resetPosition(newPose.getRotation(), DRIVETRAIN.getModulePositions(), newPose);
+    }
+
+    public boolean getAtGoal() {
+        return rotationController.atSetpoint();
+    }
+
+    @Log
+    public boolean getSlowMode() {
+        return slowmode;
+    }
+
+    @Log
+    public double getOdometryDegrees() {
         return getPose().getRotation().getDegrees();
     }
 
+    @Log
     public double getRobotAngleDegrees() {
-        return getRobotAngle().getDegrees();
+        return getHeading().getDegrees();
+    }  
+
+    @Log
+    public double getyMeters() {
+        return m_odometry.getEstimatedPosition().getY();
+    }
+
+    @Log
+    public double getxMeters() {
+        return m_odometry.getEstimatedPosition().getX();
+    }
+
+    @Log
+    public double getHoldAngle() {
+        return holdAngle;
     }
 
     public ChassisSpeeds getChassisSpeeds() {
         return chassisSpeeds;
     }
 
-    public void setDriveSpeeds(Translation2d xySpeedsMetersPerSec, double rRadiansPerSec, boolean fieldRelative) {
-        chassisSpeeds = fieldRelative ? ChassisSpeeds.fromFieldRelativeSpeeds(
-                xySpeedsMetersPerSec.getX(),
-                xySpeedsMetersPerSec.getY(),
-                rRadiansPerSec,
-                robotPose.getRotation()) : new ChassisSpeeds(
-                    xySpeedsMetersPerSec.getX(),
-                    xySpeedsMetersPerSec.getY(),
-                    rRadiansPerSec);
-        SwerveModuleState [] swerveModuleStates = m_driveTrain.m_kinematics.toSwerveModuleStates(chassisSpeeds);
-        
-        SwerveDriveKinematics.desaturateWheelSpeeds(swerveModuleStates, SwerveConstants.MAX_SPEED_METERSperSECOND);
-        m_driveTrain.setModuleSpeeds(swerveModuleStates);
-    }
-
-    public Pose2d updateOdometry() {
-        return m_odometry.update(getRobotAngle(), m_driveTrain.getModulePositions());
-    }
-
     public Pose2d getOdometryPose() {
         return m_odometry.getEstimatedPosition();
     }
 
-    public void setHoldAngleFlag(boolean input) {
-        holdAngleEnabled = input;
+    public Pose2d getPose() {
+        return robotPose;
     }
-
-    public boolean getHoldAngleFlag() {
-        return holdAngleEnabled;
-    }
-
-    public void setHoldAngle(double input) {
-        holdAngle = input;
-    }
-
-    public void resetOdometry(Pose2d newPose) {
-        m_odometry.resetPosition(newPose.getRotation(), m_driveTrain.getModulePositions(), newPose);
+    
+    public static Rotation2d getHeading() {
+        return gyro.getRotation2d();
     }
 
     public SwerveDriveKinematics getKinematics() {
-        return m_driveTrain.m_kinematics;
+        return DRIVETRAIN.swerveKinematics;
+    }
+
+    @Log
+    public boolean getHoldAngleEnabled() {
+        return holdAngleEnabled;
+    }
+
+    public void setFieldOriented() {
+        fieldRelative = true;
+        holdAngle = Math.toRadians(SwerveDef.gyro.getAngle());
+    }
+
+    public void setHoldAngle(double angle) { //ve STUPNICH
+        holdAngle = angle;
+    }
+
+    public void setHoldAngleFlag(boolean flag) {
+        holdAngleEnabled = flag;
+    }
+
+    public void setNoteControllerFlag(boolean flag) {
+        holdAngleEnabled = flag;
+    }
+
+    public void setTagControllerFlag(boolean flag) {
+        holdAngleEnabled = flag;
+    }
+
+    public void setRobotOriented() { //TODO zrusit, NEPOUZIVAT
+        fieldRelative = false;
+    }
+
+    public void setOdometry(Pose2d pose) {
+        m_odometry.resetPosition(pose.getRotation(), modulePositions, pose);
     }
 
     public void setAutoModuleStates(SwerveModuleState[] states) {
-        m_driveTrain.setModuleSpeeds(states);
+        DRIVETRAIN.setModuleSpeeds(states);
     }
 
     public void setAutoChassisSpeeds(ChassisSpeeds speeds) {
         setAutoModuleStates(getKinematics().toSwerveModuleStates(speeds));
     }
 
-    public void drawRobotOnField(Field2d field) {
-        Pose2d robotPose = m_odometry.getEstimatedPosition();
-        if(DriverStation.getAlliance().equals(Alliance.Red)) {
-            robotPose = new Pose2d(new Translation2d(16.541748984 - robotPose.getX(), 8.01367968 - robotPose.getY()), robotPose.getRotation().rotateBy(Rotation2d.fromDegrees(180)));
-        }
-
-        field.setRobotPose(robotPose);
-
-        field.getObject("frontLeft").setPose(
-            robotPose.transformBy(new Transform2d(m_driveTrain.FLModule.moduleXYTranslation, m_driveTrain.FLModule.getPosition().angle)));
-        field.getObject("frontRight").setPose(
-            robotPose.transformBy(new Transform2d(m_driveTrain.FRModule.moduleXYTranslation, m_driveTrain.FRModule.getPosition().angle)));
-        field.getObject("backLeft").setPose(
-            robotPose.transformBy(new Transform2d(m_driveTrain.RLModule.moduleXYTranslation, m_driveTrain.RLModule.getPosition().angle)));
-        field.getObject("backRight").setPose(
-            robotPose.transformBy(new Transform2d(m_driveTrain.RRModule.moduleXYTranslation, m_driveTrain.RRModule.getPosition().angle)));
-
-        akitPose[0] = this.robotPose.getX();
-        akitPose[1] = this.robotPose.getY();
-        akitPose[2] = this.robotPose.getRotation().getRadians();
-        SmartDashboard.putNumberArray("akitPose", akitPose);    
-    }
-
     public void setToBrake() {
-        m_driveTrain.setToBrake();
+        DRIVETRAIN.setToBrake();
     }
 
     public void setToCoast() {
-        m_driveTrain.setToCoast();
+        DRIVETRAIN.setToCoast();
     }
 
-    public double xMeters() {
-        return m_odometry.getEstimatedPosition().getX();
-    }
+    public Command joystickDrive(DoubleSupplier lx, DoubleSupplier ly, DoubleSupplier rx) {
+        return Commands.run(() -> {
+            SwerveModuleState[] states;
 
-    public double yMeters() {
-        return m_odometry.getEstimatedPosition().getY();
-    }
+            double leftX = lx.getAsDouble();
+            double leftY = ly.getAsDouble();
+            double rightX = rx.getAsDouble();
 
-    private double convertToMetersPerSecond(double _input) {
-        return _input*SwerveConstants.MAX_SPEED_METERSperSECOND;
-    }
+            xSpeed = leftX * leftX * Math.signum(leftX) * SwerveConstants.MAX_SPEED_METERSperSECOND * DriverConstants.DRIVE_GOVERNOR;
+            ySpeed = leftY * leftY * Math.signum(leftY) * SwerveConstants.MAX_SPEED_METERSperSECOND * DriverConstants.DRIVE_GOVERNOR;
 
-    private double convertToRadiansPerSecond(double _input) {
-        return _input*SwerveConstants.MAX_SPEED_RADIANSperSECOND;
-    }
-
-    private LimelightPose2d getLimelightPose(String limelightName) {
-        Pose2d pose;
-        LimelightHelpers.LimelightResults results = LimelightHelpers.getLatestResults(limelightName);
-        if(DriverStation.getAlliance().equals(Alliance.Blue)) {
-            pose = results.targetingResults.getBotPose2d_wpiBlue();
-        } else {
-            pose = results.targetingResults.getBotPose2d_wpiRed();
-        }
-        double latency = results.targetingResults.latency_jsonParse + results.targetingResults.latency_capture + results.targetingResults.latency_pipeline;
-        int aprilTagAmount = results.targetingResults.targets_Fiducials.length;
-        return new LimelightPose2d(pose, latency, aprilTagAmount);
-    }
-
-    private void limelightOdometry(String limelightName) { //seems unused
-        LimelightPose2d llPose = getLimelightPose(limelightName);
-        if(llPose.latency < 120 && llPose.getTranslation().getX() > 0 && llPose.getTranslation().getX() < 4.6) {
-            if(llPose.aprilTagAmount > 1) {
-                double dist = llPose.minus(robotPose).getTranslation().getNorm();
-                if(dist > 0.1) {
-
-                }
+            if(slowmode) { //TODO probably disable, there is no need to go slow this year and there is nothing to break on the robot
+                xSpeed = xSpeed * DriverConstants.PRECISION_RATIO;
+                ySpeed = ySpeed * DriverConstants.PRECISION_RATIO;
+                rotation = rotation * DriverConstants.PRECISION_RATIO;
             }
+
+            if(holdAngleEnabled) {
+                rotation = updateRotationController();
+            }
+            else {
+                rotation = rightX * SwerveConstants.MAX_SPEED_RADIANSperSECOND * DriverConstants.TURN_GOVERNOR;
+            }
+
+            if(noteControllerEnabled) { //TODO test and potentialy disable
+                double newXSpeed = updateNoteController(); //TODO test with drivers and Notes. In theory this aligns the robot as long as the tag is visible. Then returns X axis to drivers
+                if(newXSpeed <= 1) { //Once noteController is enabled, the robot goes into robot relative mode to mitigate any robot rotation
+                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, newXSpeed, rotation, gyro.getRotation2d()));
+                } else { //TODO might want to change the xSpeed parameter to 0 to disable any driver input in an already aligned axis
+                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d()));
+                }
+                
+            } else if(tagControllerEnabled) { //TODO TEST and force the drivers to use this
+                double newXSpeed = updateTagController();
+                if(newXSpeed <= 1) {
+                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, newXSpeed, rotation, gyro.getRotation2d()));
+                } else { //TODO maybe replace xSpeed with 0
+                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d()));
+                }
+            } else {
+                states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d()));
+            }
+
+            SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveConstants.MAX_SPEED_METERSperSECOND); //konecne funguje
+
+            DRIVETRAIN.setModuleSpeeds(states);
+        });
+    }
+
+    public Command autonomousDrive(double xSpeed, double ySpeed, double rotation) { //TODO check if robot or field relative
+        return Commands.run(() -> {
+            SwerveModuleState[] states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d()));
+            SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveConstants.MAX_SPEED_METERSperSECOND);
+            DRIVETRAIN.setModuleSpeeds(states);
+        });
+    }
+
+    /**public static void assistedDrive() {
+        pid.setOffset(LimelightAiming.tapeLimelight1.X);
+
+        ySpeed = deadzone(controller.getLeftY()) * SwerveDef.MAX_SPEED_MPS * SwerveDef.DRIVE_COEFFICIENT;
+        xSpeed = pid.pidGet();
+        rotation = deadzone(controller.getRightX()) * SwerveDef.MAX_SPEED_RADPS * SwerveDef.TURN_COEFFICIENT;
+
+        SwerveModuleState[] states = swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed, xSpeed, rotation, SwerveDef.gyro.getRotation2d()));
+
+        SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveDef.MAX_SPEED_MPS);
+
+        SwerveDef.flModule.setState(states[0]);
+        SwerveDef.frModule.setState(states[1]);
+        SwerveDef.rlModule.setState(states[2]);
+        SwerveDef.rrModule.setState(states[3]);
+    }*/
+
+    public double deadzone(double input) { //TODO prepsat inline
+        if (Math.abs(input) < 0.2) {
+            return 0;
+        } else {
+            return input;
         }
     }
 
-    @Config.ToggleButton(defaultValue = false, tabName = "nodeSelector", columnIndex = 22, rowIndex = 0, width = 2, height = 2)
-    public void resetToGyro(boolean input) {
+    @Config.ToggleButton(defaultValue = false, tabName = "robotMain", columnIndex = 2, rowIndex = 0, width = 2, height = 2)
+    void gyroReset(boolean input) {
         if(input) {
-            m_odometry.resetPosition(getRobotAngle(), m_driveTrain.getModulePositions(), new Pose2d(robotPose.getTranslation(), new Rotation2d(0)));
+            m_odometry.resetPosition(getHeading(), DRIVETRAIN.getModulePositions(), new Pose2d(robotPose.getTranslation(), new Rotation2d(0)));
         }
     }
 
-    public void activateHandBrake() {
-        m_driveTrain.handBrakeX(); //TODO test also handBrake90
+    static class assistPID extends PIDController {
+        double setpoint = 0;
+        double maxSpeed = 0;
+        double offset = 0;
+        public assistPID(double kP, double kI, double kD, double setpoint) {
+            super(kP, kI, kD);
+            this.setpoint = setpoint;
+            this.maxSpeed = SwerveConstants.MAX_SPEED_METERSperSECOND * DriverConstants.DRIVE_GOVERNOR;
+        }
+
+        public void setOffset(double value) {
+            offset = value;
+        }
+
+        public double pidGet() {
+            double speed = MathUtil.clamp(super.calculate(offset, setpoint), -maxSpeed, maxSpeed);
+            return -speed;
+        }
     }
 }
