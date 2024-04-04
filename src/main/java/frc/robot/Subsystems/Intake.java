@@ -9,6 +9,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.RobotContainer;
 import frc.robot.Constants.IntakeConstants;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
@@ -41,37 +42,41 @@ public class Intake extends SubsystemBase implements Loggable{
         m_intakeMotor.set(speed);
     }
 
-    public Command intake(String shooterStateName){
+    public Command intake(){
         return Commands.runEnd(() -> {
-            switch(shooterStateName) {
+            switch(RobotContainer.SHOOTER.state) {
                 
-                case "HOME":
+                case HOME:
                     speed = 0;
                     break;
-                case "INTAKE":
+                case INTAKE:
                     speed = IntakeConstants.motorSpeed;
                     break;
-                case "LOADING_STATION":
+                case LOADING_STATION:
                     speed = 0;
                     break;
-                case "AMP":
+                case AMP:
                     speed = 0;
                     break;
-                case "SPEAKER_FRONT":
+                case SPEAKER_FRONT:
                     speed = 0;
                     break;
-                case "SPEAKER_BACK":
+                case SPEAKER_BACK:
                     speed = 0;
                     break;
-                case "REVERSE":
-                    speed = -IntakeConstants.motorSpeed;
-                    break;
-                case "NULL":
+                case CLIMBER:
                     speed = 0;
                     break;
             }
         },
         () -> speed = 0);
+    }
+
+    public Command reverse() {
+        return Commands.runEnd(
+            () -> speed = -IntakeConstants.motorSpeed,
+            () -> speed = 0
+        );
     }
 
     public Command stopIntake() {

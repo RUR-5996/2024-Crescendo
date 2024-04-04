@@ -53,6 +53,7 @@ public class Shooter extends SubsystemBase implements Loggable {
     Timer robotTimer;
     double lastTime;
     double coeff = 1;
+    boolean longDist;
 /*
     public static Shooter getInstance() {
         if(instance == null) {
@@ -169,6 +170,7 @@ public class Shooter extends SubsystemBase implements Loggable {
                     setShooterAngle(122);
                     break;
                 case "SPEAKER":
+                    longDist = false;
                     if(robotAngleDegs.getAsDouble() >= -90 && robotAngleDegs.getAsDouble() <= 90) {
                         state = ShooterState.SPEAKER_BACK;
                         setShooterAngle(207); //210
@@ -187,6 +189,26 @@ public class Shooter extends SubsystemBase implements Loggable {
     public Supplier<String> supplyShooterState() {
         Supplier<String> supplier = () -> state.toString();
         return supplier;
+    }
+
+    public Command tilt(boolean up) {
+        return Commands.runOnce(() -> {
+            if(up) {
+                setNeoEncoder(getActualPosition() - 1);
+            } else {
+                setNeoEncoder(getActualPosition() + 1);
+            }
+        });
+    }
+
+    public Command longDistanceTilt() {
+        return Commands.runOnce(
+            () -> {
+                if(state == ShooterState.SPEAKER_FRONT) {
+                    longDist = true;
+                }
+            }
+        );
     }
 
     public Command intake() {
@@ -350,7 +372,12 @@ public class Shooter extends SubsystemBase implements Loggable {
                     } else if((angle < -40 && angle >= -135)||(angle > 40 && angle <= 135)) {
                         setShooterAngle(207);
                     } else if(angle < -135 || angle > 135) {
-                        setShooterAngle(135);
+                        if(longDist) {
+                        state = ShooterState.SPEAKER_FRONT;
+                        setShooterAngle(133.5); //130
+                        } else {
+                            setShooterAngle(135);
+                        }  
                     }
                 }
             }, shooter

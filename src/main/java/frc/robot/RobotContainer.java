@@ -94,10 +94,11 @@ public class RobotContainer implements Loggable {
     SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
     SHOOTER.setDefaultCommand(SHOOTER.updateSpeakerAngle(SWERVE.supplyRobotAngleDegrees(), SHOOTER));
 
-    NamedCommands.registerCommand("g_intake", SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()).andThen(Commands.parallel(INTAKE.intake("INTAKE"), SHOOTER.intake())).withTimeout(0.5));
+    NamedCommands.registerCommand("g_intake", SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()).andThen(Commands.parallel(INTAKE.intake(), SHOOTER.intake())).withTimeout(0.5));
     NamedCommands.registerCommand("set_amp", SHOOTER.setState("AMP", SWERVE.supplyRobotAngleDegrees()));
     NamedCommands.registerCommand("set_speaker", SHOOTER.setState("SPEAKER", SWERVE.supplyRobotAngleDegrees()).andThen(Commands.waitSeconds(0.5)).andThen(SHOOTER.preloadPiece().withTimeout(0.2)));
     NamedCommands.registerCommand("shoot", SHOOTER.deploy().withTimeout(0.5));
+    NamedCommands.registerCommand("set_intake", SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()));
 
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Autonomous", autoChooser);
@@ -111,10 +112,10 @@ public class RobotContainer implements Loggable {
     //xBox.b().toggleOnFalse(SWERVE.toggleSlowMode()); //might get removed, no need to go slow
     xBox.b().toggleOnTrue(SWERVE.configState("CLIMBER"));
     xBox.y().toggleOnTrue(SHOOTER.preloadPiece().withTimeout(0.1));
-    xBox.x().whileTrue(INTAKE.intake("REVERSE"));
+    xBox.x().whileTrue(INTAKE.reverse());
     //xBox.start().toggleOnTrue(SWERVE.configState(""));
 
-    xBox.rightBumper().whileTrue(Commands.parallel(SHOOTER.intake(), INTAKE.intake(shooterState)).andThen(Commands.parallel(SHOOTER.intake(), INTAKE.intake(shooterState)).withTimeout(0.5).andThen(Commands.parallel(SHOOTER.stopShooterCommand(), INTAKE.stopIntake())))); //TODO interrupt once gamepiece is in the main shooter assembly
+    xBox.rightBumper().whileTrue(Commands.parallel(SHOOTER.intake(), INTAKE.intake()));
     // xBox.rightBumper().whileTrue(INTAKE.intake(shooterState));
     xBox.leftBumper().whileTrue(SHOOTER.deploy()); //TODO what happens if both are pressed?
     //xBox.rightBumper().toggleOnFalse(SHOOTER.preloadPiece().withTimeout(0.75)); //TODO test if it runs or if it just triggers once, also test timing
@@ -128,6 +129,12 @@ public class RobotContainer implements Loggable {
     b5.toggleOnTrue(SHOOTER.setState("SPEAKER", SWERVE.supplyRobotAngleDegrees()).andThen(SHOOTER.preloadPiece().withTimeout(0.2)));
     b5.toggleOnTrue(SWERVE.configState("SPEAKER_FRONT"));
 
+    b7.toggleOnTrue(SHOOTER.tilt(true));
+    b6.toggleOnTrue(SHOOTER.tilt(false));
+    
+    b9.onTrue(Commands.parallel(CLIMBER.climbLeft(), CLIMBER.climbRight()).withTimeout(3).andThen(Commands.parallel(CLIMBER.stopLeftClimber(), CLIMBER.stopRightClimber())));
+
+    b1.toggleOnTrue(SHOOTER.longDistanceTilt());
     b10.toggleOnTrue(CLIMBER.setState("OUT"));
     b10.toggleOnTrue(SWERVE.configState("INTAKE"));
     b11.toggleOnTrue(CLIMBER.setState("CLIMBING"));
