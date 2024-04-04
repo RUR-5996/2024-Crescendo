@@ -11,7 +11,7 @@ public class LEDs extends SubsystemBase{
 
     AnalogOutput red = new AnalogOutput(0);
     AnalogOutput green = new AnalogOutput(1);
-    AnalogOutput blue = new AnalogOutput(2);
+    //AnalogOutput blue = new AnalogOutput(1);
 
     double redVoltage = 0;
     double greenVoltage = 0;
@@ -25,18 +25,18 @@ public class LEDs extends SubsystemBase{
     public void periodic() {
         red.setVoltage(redVoltage);
         green.setVoltage(greenVoltage);
-        blue.setVoltage(blueVoltage);
+        //blue.setVoltage(blueVoltage);
     }
 
-    private LEDs() {
+    public LEDs() {
         if(isRed()) {
-            redVoltage = 2.5;
+            redVoltage = 2;
             greenVoltage = 0;
             blueVoltage = 0;
         } else {
             redVoltage = 0;
             greenVoltage = 0;
-            blueVoltage = 2.5;
+            blueVoltage = 2;
         }
 
         ledTimer = new Timer();
@@ -54,13 +54,13 @@ public class LEDs extends SubsystemBase{
     public Command staticNormal() {
         return Commands.runOnce(() -> {
         if(isRed()) {
-            redVoltage = 2.5;
+            redVoltage = 2;
             greenVoltage = 0;
             blueVoltage = 0;
         } else {
             redVoltage = 0;
             greenVoltage = 0;
-            blueVoltage = 2.5;
+            blueVoltage = 2;
         }
         });
     }
@@ -70,7 +70,7 @@ public class LEDs extends SubsystemBase{
             () -> {
                 if(ledTimer.get() < 0.5) { //green flash
                     redVoltage = 0;
-                    greenVoltage = 2.5;
+                    greenVoltage = 2;
                     blueVoltage = 0;
                 } else if (ledTimer.get() < 1) { //TODO adjust timings
                     redVoltage = 0;
@@ -90,7 +90,7 @@ public class LEDs extends SubsystemBase{
                 if(ledTimer.get() < 0.5) { //blue flash
                     redVoltage = 0;
                     greenVoltage = 0;
-                    blueVoltage = 2.5;
+                    blueVoltage = 2;
                 } else if (ledTimer.get() < 1) { //TODO adjust timings
                     redVoltage = 0;
                     greenVoltage = 0;
@@ -106,9 +106,9 @@ public class LEDs extends SubsystemBase{
         return Commands.runEnd(
             () -> {
                 if(ledTimer.get() < 0.5) { //purple flash
-                    redVoltage = 2.5;
+                    redVoltage = 2;
                     greenVoltage = 0;
-                    blueVoltage = 2.5;
+                    blueVoltage = 2;
                 } else if (ledTimer.get() < 1) { //TODO adjust timings
                     redVoltage = 0;
                     greenVoltage = 0;

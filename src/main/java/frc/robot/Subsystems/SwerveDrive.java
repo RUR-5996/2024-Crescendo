@@ -1,6 +1,7 @@
 package frc.robot.Subsystems;
 
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import com.kauailabs.navx.frc.AHRS;
 
@@ -37,7 +38,6 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
 
     //control variables
     DriveTrain DRIVETRAIN;
-    Shooter SHOOTER;
 
     PIDController tagController;
     PIDController noteController;
@@ -46,6 +46,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     double ySpeed = 0;
     double rotation = 0;
     double holdAngle = 0;
+    double defaultHoldAngle = 0;
     double defaultAngle = 0;
     double rotationControllerOutput;
     double deltaTime = 0;
@@ -73,7 +74,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
 
     SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
 
-    PIDController angleHoldController = new PIDController(0.01, 0, 0); // edit the vals
+    PIDController angleHoldController = new PIDController(10, 0, 0); // edit the vals
 
     PIDController rotationController;
 
@@ -86,12 +87,12 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
      * Function for getting the single instance of this class
      * @return SwerveDrive instance
      */
-    public static SwerveDrive getInstance() {
+    /*public static SwerveDrive getInstance() {
         if(SWERVE == null) {
             SWERVE = new SwerveDrive();
         }
         return SWERVE;
-    }
+    }*/
 
     /**
      * Function for setting up the SwerveDrive object
@@ -127,6 +128,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         noteController = new PIDController(0.1, 0, 0);
         noteController.setTolerance(1);
 
+        chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, gyro.getRotation2d());
     }
 
     /**
@@ -144,16 +146,20 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     }
 
     public Command configState(String shooterStateName) {
-        return Commands.runOnce(() ->  {switch(shooterStateName) {
+        //String shooterStateName = shooterStateNameSupp.toString();
+        return Commands.runOnce(() ->  {
+        switch(shooterStateName) {
             case "HOME":
                 setHoldAngleFlag(false);
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
+                setHoldAngle(defaultAngle);
                 break;
             case "INTAKE":
                 setHoldAngleFlag(false);
-                setNoteControllerFlag(true);
+                setNoteControllerFlag(false);
                 setTagControllerFlag(false);
+                setHoldAngle(defaultAngle);
                 break;
             case "LOADING_STATION":
                 setHoldAngleFlag(true);
@@ -163,7 +169,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                     setHoldAngle(120);
                 }
                 setNoteControllerFlag(false);
-                setTagControllerFlag(true);
+                setTagControllerFlag(false);
                 break;
             case "AMP":
                 setHoldAngleFlag(true);
@@ -173,20 +179,35 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                     setHoldAngle(-90);
                 }
                 setNoteControllerFlag(false);
-                setTagControllerFlag(true);
+                setTagControllerFlag(false);
                 break;
             case "SPEAKER_FRONT":
                 setHoldAngleFlag(false);
                 setNoteControllerFlag(false);
-                setTagControllerFlag(true);
+                setTagControllerFlag(false);
+                setHoldAngle(defaultAngle);
                 break;
             case "SPEAKER_BACK":
                 setHoldAngleFlag(false);
                 setNoteControllerFlag(false);
-                setTagControllerFlag(true);
+                setTagControllerFlag(false);
+                setHoldAngle(defaultAngle);
                 break;
             case "NULL":
                 setHoldAngleFlag(false);
+                setNoteControllerFlag(false);
+                setTagControllerFlag(false);
+                setHoldAngle(defaultAngle);
+                break;
+            case "CLIMBER":
+                setHoldAngleFlag(true);
+                if(getRobotAngleDegrees() > 0 && getRobotAngleDegrees() < 90) {
+                    setHoldAngle(60);
+                } else if(getRobotAngleDegrees() > -90 && getRobotAngleDegrees() < 0) {
+                    setHoldAngle(-60);
+                } else {
+                    setHoldAngle(-180);
+                }
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
                 break;
@@ -245,7 +266,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         return rotationController.atSetpoint();
     }
 
-    @Log
+    //@Log
     public boolean getSlowMode() {
         return slowmode;
     }
@@ -259,6 +280,15 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     public double getRobotAngleDegrees() {
         return getHeading().getDegrees();
     }  
+
+    public DoubleSupplier supplyRobotAngleDegrees() {
+        DoubleSupplier angle = () -> getOdometryDegrees();
+        return angle;
+    }
+
+    public Command resetGyro() {
+        return Commands.runOnce(() -> gyro.reset());
+    }
 
     @Log
     public double getyMeters() {
@@ -314,11 +344,11 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     }
 
     public void setNoteControllerFlag(boolean flag) {
-        holdAngleEnabled = flag;
+        noteControllerEnabled = flag;
     }
 
     public void setTagControllerFlag(boolean flag) {
-        holdAngleEnabled = flag;
+        tagControllerEnabled = flag;
     }
 
     public void setRobotOriented() { //TODO zrusit, NEPOUZIVAT
@@ -334,6 +364,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     }
 
     public void setAutoChassisSpeeds(ChassisSpeeds speeds) {
+        chassisSpeeds = speeds;
         setAutoModuleStates(getKinematics().toSwerveModuleStates(speeds));
     }
 
@@ -345,7 +376,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         DRIVETRAIN.setToCoast();
     }
 
-    public Command joystickDrive(DoubleSupplier lx, DoubleSupplier ly, DoubleSupplier rx) {
+    public Command joystickDrive(DoubleSupplier lx, DoubleSupplier ly, DoubleSupplier rx, SwerveDrive drive) {
         return Commands.run(() -> {
             SwerveModuleState[] states;
 
@@ -364,6 +395,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
 
             if(holdAngleEnabled) {
                 rotation = updateRotationController();
+                System.out.println("setting");
             }
             else {
                 rotation = rightX * SwerveConstants.MAX_SPEED_RADIANSperSECOND * DriverConstants.TURN_GOVERNOR;
@@ -372,26 +404,31 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
             if(noteControllerEnabled) { //TODO test and potentialy disable
                 double newXSpeed = updateNoteController(); //TODO test with drivers and Notes. In theory this aligns the robot as long as the tag is visible. Then returns X axis to drivers
                 if(newXSpeed <= 1) { //Once noteController is enabled, the robot goes into robot relative mode to mitigate any robot rotation
-                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, newXSpeed, rotation, gyro.getRotation2d()));
+                    chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, newXSpeed, rotation, gyro.getRotation2d());
+                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
                 } else { //TODO might want to change the xSpeed parameter to 0 to disable any driver input in an already aligned axis
-                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d()));
+                    chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d());
+                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
                 }
                 
             } else if(tagControllerEnabled) { //TODO TEST and force the drivers to use this
                 double newXSpeed = updateTagController();
                 if(newXSpeed <= 1) {
-                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, newXSpeed, rotation, gyro.getRotation2d()));
+                    chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, newXSpeed, rotation, gyro.getRotation2d());
+                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
                 } else { //TODO maybe replace xSpeed with 0
-                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d()));
+                    chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d());
+                    states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
                 }
             } else {
-                states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d()));
+                chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d());
+                states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(chassisSpeeds);
             }
 
             SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveConstants.MAX_SPEED_METERSperSECOND);
 
             DRIVETRAIN.setModuleSpeeds(states);
-        });
+        }, drive);
     }
 
     public Command autonomousDrive(double xSpeed, double ySpeed, double rotation) { //TODO check if robot or field relative
@@ -414,7 +451,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         return DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
     }
 
-    @Config.ToggleButton(defaultValue = false, tabName = "robotMain", columnIndex = 2, rowIndex = 0, width = 2, height = 2)
+    //@Config.ToggleButton(defaultValue = false, tabName = "robotMain", columnIndex = 2, rowIndex = 0, width = 2, height = 2)
     void gyroReset(boolean input) {
         if(input) {
             m_odometry.resetPosition(getHeading(), DRIVETRAIN.getModulePositions(), new Pose2d(robotPose.getTranslation(), new Rotation2d(0)));

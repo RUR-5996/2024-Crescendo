@@ -18,15 +18,15 @@ public class Constants {
     public static final class AutoConstants { //TODO move to SwerveConstants
         public static final double t_kP = 15;
         public static final double r_kP = 15;
-        public static final HolonomicPathFollowerConfig autoConfig = new HolonomicPathFollowerConfig(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(5.0, 0.0, 0.0), SwerveConstants.MAX_SPEED_METERSperSECOND, Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH), new ReplanningConfig());
-        public static final double MAX_ACCELERATION = 0.5; //TODO determine
-        public static final double MAX_VELOCITY = 4.9; //TODO determine
-        public static final double MAX_ROT_ACCELERATION = 0.5; //TODO determine
-        public static final double MAX_ROT_VELOCITY = 2*Math.PI*Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH)*SwerveConstants.MAX_SPEED_METERSperSECOND; //TODO determine
+        public static final HolonomicPathFollowerConfig autoConfig = new HolonomicPathFollowerConfig(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(0, 0.0, 0.0), SwerveConstants.MAX_SPEED_METERSperSECOND, Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH), new ReplanningConfig());
+        //public static final double MAX_ACCELERATION = 0.5; //TODO determine
+        //public static final double MAX_VELOCITY = 4.9; //TODO determine
+        //public static final double MAX_ROT_ACCELERATION = 0.5; //TODO determine
+       // public static final double MAX_ROT_VELOCITY = 2*Math.PI*Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH)*SwerveConstants.MAX_SPEED_METERSperSECOND; //TODO determine
     }
     public static final class IntakeConstants {
         public static final int motorID = 20;
-        public static final double motorSpeed = 0.95;
+        public static final double motorSpeed = 0.9;
         public static final InvertedValue inverted = InvertedValue.CounterClockwise_Positive;
     }
     public static final class ShooterConstants {

@@ -1,5 +1,7 @@
 package frc.robot.Subsystems.swerve;
 
+import java.util.function.BooleanSupplier;
+
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -126,7 +128,7 @@ public class SwerveDef implements Loggable {
             neoController.setIZone(300);
             neoController.setOutputRange(-1, 1);
             neoController.setFeedbackDevice(neoEncoder);
-            //4zeroEncoder();
+            //zeroEncoder();
         }
 
         public void setToCoast() {
