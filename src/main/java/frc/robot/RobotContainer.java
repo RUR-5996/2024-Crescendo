@@ -119,7 +119,8 @@ public class RobotContainer implements Loggable {
     // xBox.rightBumper().whileTrue(INTAKE.intake(shooterState));
     xBox.leftBumper().whileTrue(SHOOTER.deploy()); //TODO what happens if both are pressed?
     //xBox.rightBumper().toggleOnFalse(SHOOTER.preloadPiece().withTimeout(0.75)); //TODO test if it runs or if it just triggers once, also test timing
-
+    /*
+    //Vasek
     b2.toggleOnTrue(SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()));
     b2.toggleOnTrue(SWERVE.configState("INTAKE"));
     b3.toggleOnTrue(SHOOTER.setState("LOADING_STATION", SWERVE.supplyRobotAngleDegrees()));
@@ -129,19 +130,30 @@ public class RobotContainer implements Loggable {
     b5.toggleOnTrue(SHOOTER.setState("SPEAKER", SWERVE.supplyRobotAngleDegrees()).andThen(SHOOTER.preloadPiece().withTimeout(0.2)));
     b5.toggleOnTrue(SWERVE.configState("SPEAKER_FRONT"));
 
-    b7.toggleOnTrue(SHOOTER.tilt(true));
-    b6.toggleOnTrue(SHOOTER.tilt(false));
-    
-    b9.onTrue(Commands.parallel(CLIMBER.climbLeft(), CLIMBER.climbRight()).withTimeout(3).andThen(Commands.parallel(CLIMBER.stopLeftClimber(), CLIMBER.stopRightClimber())));
-
-    b1.toggleOnTrue(SHOOTER.longDistanceTilt());
     b10.toggleOnTrue(CLIMBER.setState("OUT"));
     b10.toggleOnTrue(SWERVE.configState("INTAKE"));
     b11.toggleOnTrue(CLIMBER.setState("CLIMBING"));
 
-
+    b8.toggleOnTrue(SWERVE.resetGyro());
     b7.toggleOnTrue(LEDS.resetTimer().andThen(LEDS.signalAmplify().withTimeout(3)));
+    */
 
+    //Simon
+    b7.toggleOnTrue(SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()));
+    b7.toggleOnTrue(SWERVE.configState("INTAKE"));
+    b6.toggleOnTrue(SHOOTER.setState("LOADING_STATION", SWERVE.supplyRobotAngleDegrees()));
+    b6.toggleOnTrue(SWERVE.configState("LOADING_STATION"));
+    b10.toggleOnTrue(SHOOTER.setState("AMP", SWERVE.supplyRobotAngleDegrees()));
+    b10.toggleOnTrue(SWERVE.configState("AMP"));
+    b11.toggleOnTrue(SHOOTER.setState("SPEAKER", SWERVE.supplyRobotAngleDegrees()).andThen(SHOOTER.preloadPiece().withTimeout(0.2)));
+    b11.toggleOnTrue(SWERVE.configState("SPEAKER_FRONT"));
+
+    b3.toggleOnTrue(CLIMBER.setState("OUT"));
+    b3.toggleOnTrue(SWERVE.configState("INTAKE"));
+    b2.toggleOnTrue(CLIMBER.setState("CLIMBING"));
+
+    b8.toggleOnTrue(SWERVE.resetGyro());
+    b9.toggleOnTrue(LEDS.resetTimer().andThen(LEDS.signalAmplify().withTimeout(3)));
     //extends arms on 15seconds
     new Trigger(isEndgame()).toggleOnTrue(Commands.parallel(CLIMBER.setState("AUTO_OUT"), LEDS.signalEndgame()));
     new Trigger(SHOOTER.isLoaded()).toggleOnTrue(LEDS.signalIntake().withTimeout(3));
@@ -149,8 +161,6 @@ public class RobotContainer implements Loggable {
 
     xBox.leftTrigger().whileTrue(CLIMBER.climbLeft());
     xBox.rightTrigger().whileTrue(CLIMBER.climbRight());
-
-    b8.toggleOnTrue(SWERVE.resetGyro());
 
     pitBox.leftTrigger().whileTrue(CLIMBER.retrieveLeft());
     pitBox.rightTrigger().whileTrue(CLIMBER.retrieveRight());
