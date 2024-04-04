@@ -43,7 +43,7 @@ public class Climber extends SubsystemBase implements Loggable{
         return instance;
     }
 
-    private Climber() {
+    public Climber() {
         m_leftMotor.restoreFactoryDefaults();
         m_leftMotor.setIdleMode(IdleMode.kBrake);
         m_leftMotor.setInverted(ClimberConstants.leftMotorInverted);
@@ -80,15 +80,45 @@ public class Climber extends SubsystemBase implements Loggable{
         m_rightEncoder.setPosition(0);
     }
 
+    public void init() {
+        m_leftEncoder.setPosition(0);
+        m_rightEncoder.setPosition(0);
+    }
+
     @Override
     public void periodic() {
         autoExtension();
+    }
+
+    public Command retrieveLeft() {
+        return Commands.runEnd(
+        () -> {
+            state = ClimberState.CLIMBING;
+            m_leftPID.setReference(-0.5, ControlType.kDutyCycle);},
+        () -> {
+            state = ClimberState.IDLE;
+            m_leftPID.setReference(0, ControlType.kDutyCycle);}
+        );
+    }
+
+    public Command retrieveRight() {
+        return Commands.runEnd(
+        () -> {
+            state = ClimberState.CLIMBING;
+            m_rightPID.setReference(-0.5, ControlType.kDutyCycle);},
+        () -> {
+            state = ClimberState.IDLE;
+            m_rightPID.setReference(0, ControlType.kDutyCycle);}
+        );
     }
 
     public Command setState(String stateName) {
         return Commands.runOnce(() -> {
             switch (stateName) {
             case "OUT":
+                state = ClimberState.OUT;
+                break;
+            case "AUTO_OUT":
                 if(state.equals(ClimberState.CLIMBING)) { //makes sure that the arms don't extend if we already started climbing
 
                 }else {

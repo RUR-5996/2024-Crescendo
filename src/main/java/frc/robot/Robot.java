@@ -15,11 +15,6 @@ import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.Subsystems.Climber;
-import frc.robot.Subsystems.Intake;
-import frc.robot.Subsystems.Shooter;
-import frc.robot.Subsystems.SwerveDrive;
-import frc.robot.Subsystems.swerve.DriveTrain;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
 
@@ -28,18 +23,12 @@ public class Robot extends TimedRobot implements Loggable{
   private RobotContainer m_robotContainer;
   private GenericEntry matchTimeEntry;
 
-  public static SwerveDrive SWERVE;
-  public static Shooter SHOOTER;
-  DriveTrain DRIVETRAIN;
-  Intake INTAKE;
-  Climber CLIMBER;
   public static XboxController controller = new XboxController(0);
   public static GenericHID sController = new GenericHID(1);
 
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
-    Logger.configureLoggingAndConfig(this, false);
     matchTimeEntry = Shuffleboard.getTab("selector")
       .add("Match time", "")
       .withWidget(BuiltInWidgets.kTextView)
@@ -47,14 +36,11 @@ public class Robot extends TimedRobot implements Loggable{
       .withPosition(1, 1)
       .withSize(7,3)
       .getEntry();
-
-    SHOOTER = Shooter.getInstance();
-    SWERVE = SwerveDrive.getInstance();
-    DRIVETRAIN = DriveTrain.getInstance();
-    INTAKE = Intake.getInstance();
-    CLIMBER = Climber.getInstance();
       
     Logger.configureLoggingAndConfig(this, false);
+
+    RobotContainer.SHOOTER.init();
+    RobotContainer.CLIMBER.init();
   }
 
   @Override
@@ -62,6 +48,7 @@ public class Robot extends TimedRobot implements Loggable{
     CommandScheduler.getInstance().run();
     Logger.updateEntries();
     matchTimeEntry.setString(String.format("%.2f", DriverStation.getMatchTime()));
+    RobotContainer.periodic();
   }
 
   @Override
@@ -75,10 +62,11 @@ public class Robot extends TimedRobot implements Loggable{
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_robotContainer.getAutoCommand();
 
-    m_autonomousCommand.schedule();
-    
+    if(m_autonomousCommand != null) {
+      m_autonomousCommand.schedule();
+    }    
   }
 
   @Override
@@ -96,10 +84,7 @@ public class Robot extends TimedRobot implements Loggable{
 
   @Override
   public void teleopPeriodic() { //TODO find out, how the periodic function works in command based
-    /*SWERVE.periodic();
-    SHOOTER.periodic();
-    INTAKE.periodic();
-    CLIMBER.periodic();*/
+
   }
 
   @Override

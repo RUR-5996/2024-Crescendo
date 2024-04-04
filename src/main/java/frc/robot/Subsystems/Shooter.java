@@ -1,6 +1,8 @@
 package frc.robot.Subsystems;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
 
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
@@ -51,15 +53,15 @@ public class Shooter extends SubsystemBase implements Loggable {
     Timer robotTimer;
     double lastTime;
     double coeff = 1;
-
+/*
     public static Shooter getInstance() {
         if(instance == null) {
             instance = new Shooter();
         }
         return instance;
     }
-
-    private Shooter() {
+*/
+    public Shooter() {
 
         robotTimer = new Timer();
         robotTimer.reset();
@@ -105,10 +107,14 @@ public class Shooter extends SubsystemBase implements Loggable {
         shooterTalonConfig.OpenLoopRamps = openLoopConfig;
         shooterTalonConfig.ClosedLoopRamps = closedLoopConfig;
         m_longMotor.getConfigurator().apply(shooterTalonConfig);
-
-        resetEncoder();
-        m_rotationEncoder.setPosition(0);
         lastTime = robotTimer.get();
+
+        
+    }
+
+    public void init() {
+        m_rotationEncoder.setPosition(0);
+        //m_rotationEncoder.setPosition(360-getAbsolutePosition()); //357.5
     }
 
     @Override
@@ -143,7 +149,7 @@ public class Shooter extends SubsystemBase implements Loggable {
         return robotTimer.get() - lastTime;
     }
 
-    public Command setState(String stateName, double robotAngleDegs) {
+    public Command setState(String stateName, DoubleSupplier robotAngleDegs) {
         return Commands.runOnce(() -> {
             switch (stateName) {
                 case "HOME":
@@ -160,22 +166,27 @@ public class Shooter extends SubsystemBase implements Loggable {
                     break;
                 case "AMP":
                     state = ShooterState.AMP;
-                    setShooterAngle(115);
+                    setShooterAngle(122);
                     break;
                 case "SPEAKER":
-                    if(robotAngleDegs >= -90 && robotAngleDegs <= 90) {
+                    if(robotAngleDegs.getAsDouble() >= -90 && robotAngleDegs.getAsDouble() <= 90) {
                         state = ShooterState.SPEAKER_BACK;
-                        setShooterAngle(220);
+                        setShooterAngle(207); //210
                     } else {
                         state = ShooterState.SPEAKER_FRONT;
-                        setShooterAngle(135); //TODO add method for adjusting angle on the fly based on April Tags
+                        setShooterAngle(133.5); //130
                     }
                     break;
-                case "TRAP":
-                    state = ShooterState.TRAP;
-                    setShooterAngle(120); //TODO test ideal angle
+                case "CLIMBER":
+                    state = ShooterState.CLIMBER;
+                    setShooterAngle(0); //TODO test ideal angle
             }
         });
+    }
+
+    public Supplier<String> supplyShooterState() {
+        Supplier<String> supplier = () -> state.toString();
+        return supplier;
     }
 
     public Command intake() {
@@ -205,8 +216,8 @@ public class Shooter extends SubsystemBase implements Loggable {
                     setShortSpeed(0);
                     setLongSpeed(0);
                     break;
-                case TRAP:
-                    setShortSpeed(0);
+                case CLIMBER:
+                    setShortSpeed(-0.7);
                     setLongSpeed(0);
                     break;
             }
@@ -241,22 +252,33 @@ public class Shooter extends SubsystemBase implements Loggable {
                     setShortSpeed(-0.75);
                     setLongSpeed(0.95);
                     break;
-                case TRAP:
+                case CLIMBER:
                     setShortSpeed(-0.75);
-                    setLongSpeed(0.95);
+                    setLongSpeed(0.80);
             } 
         }, 
         () -> stopShooter());
     }
 
-    public Command climb() {
+    /*public Command climb() {
         return Commands.runOnce(() -> {
             state = ShooterState.HOME; //TODO test TRAP. If it works, set this state to 180 offset to point up
-            setShooterAngle(0);
+            setShooterAngle(180);
+        });
+    }*/
+
+    public Command stopShooterCommand() {
+        return Commands.runOnce(() -> {
+            setShortSpeed(0);
+            setLongSpeed(0);
         });
     }
 
     public double calculateSpeakerAngle(double dist) { //TODO test with odometry, create line function
+        double closeAngle = 130.25;
+        double podiumAngle = 125;
+        double distFromSpeaker = 0;
+
         return 0;
     }
 
@@ -274,7 +296,7 @@ public class Shooter extends SubsystemBase implements Loggable {
     }
 
     //evanometer lol
-    @Config.NumberSlider(defaultValue = 1) //TODO apply coeff to shooter speeds if needed, here is the default change structure for it
+ //   @Config.NumberSlider(defaultValue = 1) //TODO apply coeff to shooter speeds if needed, here is the default change structure for it
     public void setShooterCoeff(double coeff) {
         this.coeff = coeff;
     }
@@ -318,9 +340,42 @@ public class Shooter extends SubsystemBase implements Loggable {
         return state;
     }
 
+    public Command updateSpeakerAngle(DoubleSupplier angleSupplier, Shooter shooter) {
+        return Commands.run(
+            () -> {
+                if(state == ShooterState.SPEAKER_BACK || state == ShooterState.SPEAKER_FRONT){
+                    double angle = angleSupplier.getAsDouble();
+                    if(angle <= 40 && angle >= -40) {
+                        setShooterAngle(207);
+                    } else if((angle < -40 && angle >= -135)||(angle > 40 && angle <= 135)) {
+                        setShooterAngle(207);
+                    } else if(angle < -135 || angle > 135) {
+                        setShooterAngle(135);
+                    }
+                }
+            }, shooter
+        );
+    }
+
     @Log
     public String getShooterStateName() {
-        return state.toString();
+        switch(state) {
+                case HOME:
+                    return "HOME";
+                case INTAKE:
+                    return "INTAKE";
+                case LOADING_STATION:
+                    return "LOADING_STATION";
+                case AMP:
+                    return "AMP";
+                case SPEAKER_FRONT:
+                    return "SPEAKER_FRONT";
+                case SPEAKER_BACK:
+                    return "SPEAKER_BACK";
+                case CLIMBER:
+                    return "TRAP";
+            } 
+        return "NULL";
     }
 
     @Log
@@ -334,6 +389,6 @@ public class Shooter extends SubsystemBase implements Loggable {
     }
 
     public enum ShooterState {
-        HOME, INTAKE, LOADING_STATION, AMP, SPEAKER_FRONT, SPEAKER_BACK, TRAP;
+        HOME, INTAKE, LOADING_STATION, AMP, SPEAKER_FRONT, SPEAKER_BACK, CLIMBER;
     }
 }

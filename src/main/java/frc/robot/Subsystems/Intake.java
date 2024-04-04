@@ -10,16 +10,12 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
-import frc.robot.Subsystems.Shooter.ShooterState;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
-import frc.robot.Robot;
 
 public class Intake extends SubsystemBase implements Loggable{
     TalonFX m_intakeMotor = new TalonFX(IntakeConstants.motorID);
     private TalonFXConfiguration intakeTalonConfig = new TalonFXConfiguration();
-    
-    public ShooterState shooterState = Robot.SHOOTER.state;
 
     private static Intake instance;
 
@@ -33,7 +29,7 @@ public class Intake extends SubsystemBase implements Loggable{
         return instance;
     }
 
-    private Intake() {
+    public Intake() {
         m_intakeMotor.getConfigurator().refresh(intakeTalonConfig);
         intakeTalonConfig.MotorOutput.Inverted = IntakeConstants.inverted;
         intakeTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -46,8 +42,9 @@ public class Intake extends SubsystemBase implements Loggable{
     }
 
     public Command intake(String shooterStateName){
-        return Commands.run(() -> {
+        return Commands.runEnd(() -> {
             switch(shooterStateName) {
+                
                 case "HOME":
                     speed = 0;
                     break;
@@ -73,7 +70,12 @@ public class Intake extends SubsystemBase implements Loggable{
                     speed = 0;
                     break;
             }
-        });
+        },
+        () -> speed = 0);
+    }
+
+    public Command stopIntake() {
+        return Commands.runOnce(() -> speed = 0);
     }
 
     @Log
