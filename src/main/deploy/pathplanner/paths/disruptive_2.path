@@ -3,32 +3,38 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 0.7921919881844527,
-        "y": 4.679883944090929
+        "x": 8.29,
+        "y": 0.77
       },
       "prevControl": null,
       "nextControl": {
-        "x": 1.586116326199401,
-        "y": 4.00853602191765
+        "x": 8.31703315828284,
+        "y": 1.5319342319596334
       },
       "isLocked": false,
-      "linkedName": "source_blue_shoot"
+      "linkedName": null
     },
     {
       "anchor": {
-        "x": 7.227032411309479,
-        "y": 0.9457265470350429
+        "x": 8.29,
+        "y": 7.449176379834242
       },
       "prevControl": {
-        "x": 6.227032411309479,
-        "y": 0.9457265470350429
+        "x": 8.37185908109708,
+        "y": 6.864468657712244
       },
       "nextControl": null,
       "isLocked": false,
       "linkedName": null
     }
   ],
-  "rotationTargets": [],
+  "rotationTargets": [
+    {
+      "waypointRelativePos": 0.3,
+      "rotationDegrees": -16.104388929778818,
+      "rotateFast": false
+    }
+  ],
   "constraintZones": [],
   "eventMarkers": [
     {
@@ -41,7 +47,7 @@
             {
               "type": "named",
               "data": {
-                "name": "set_intake"
+                "name": "g_intake"
               }
             }
           ]
@@ -57,13 +63,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -178.97696981133222,
+    "rotation": -10.759607569133866,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": 120.06858282186244,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

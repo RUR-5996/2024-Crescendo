@@ -1,7 +1,5 @@
 package frc.robot.Subsystems.swerve;
 
-import java.util.function.BooleanSupplier;
-
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -87,7 +85,7 @@ public class SwerveDef implements Loggable {
             steerSensor = sensor;
             turnPID = new initPID(steerPID.kP, steerPID.kI, steerPID.kD, 1, 0);
             neoController = steerMotor.getPIDController();
-            neoEncoder = steerMotor.getEncoder(); //should return NEO built-in encoder
+            neoEncoder = steerMotor.getEncoder(); 
         }
 
         public void moduleInit() {
@@ -128,7 +126,7 @@ public class SwerveDef implements Loggable {
             neoController.setIZone(300);
             neoController.setOutputRange(-1, 1);
             neoController.setFeedbackDevice(neoEncoder);
-            //zeroEncoder();
+            zeroEncoder();
         }
 
         public void setToCoast() {
@@ -157,8 +155,6 @@ public class SwerveDef implements Loggable {
             position.distanceMeters = drive_rot / m_driveRotationsPerMeter;
             position.angle = new Rotation2d(Math.toRadians(angle));
             return position;
-            //Rotation2d rotation = new Rotation2d(Math.toRadians(neoEncoder.getPosition()));
-            //return new SwerveModulePosition(speed, rotation);
         }
         /**
          * @deprecated included in new WPILib
@@ -191,18 +187,11 @@ public class SwerveDef implements Loggable {
         }
 
         public void setState(SwerveModuleState stateToSet) {
-            //SwerveModuleState optimizedState = SwerveModuleState.optimize(stateToSet, new Rotation2d(Math.toRadians(neoEncoder.getPosition())));
             SwerveModuleState optimizedState = optimizeState(stateToSet, new Rotation2d(Math.toRadians(neoEncoder.getPosition())));
-            //SwerveModuleState optimizedState = stateToSet;
 
             setAngle(optimizedState.angle.getDegrees());
-            
-            //neoController.setReference(optimizedState.angle.getDegrees(), CANSparkMax.ControlType.kPosition);
-            //turnPID.setOffset(clampContinuousDegs(neoEncoder.getPosition()));
-            //turnPID.setTarget(optimizedState.angle.getDegrees());
-            //steerMotor.set(turnPID.pidGet());
 
-            SmartDashboard.putNumber("speed", optimizedState.speedMetersPerSecond * m_driveRotationsPerMeter);
+            SmartDashboard.putNumber("speed", optimizedState.speedMetersPerSecond * m_driveRotationsPerMeter); //TODO check if this maxes out
             driveMotor.setControl(m_velocitySetter.withVelocity(optimizedState.speedMetersPerSecond * m_driveRotationsPerMeter));
         }
 

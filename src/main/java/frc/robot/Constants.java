@@ -18,7 +18,7 @@ public class Constants {
     public static final class AutoConstants { //TODO move to SwerveConstants
         public static final double t_kP = 15;
         public static final double r_kP = 15;
-        public static final HolonomicPathFollowerConfig autoConfig = new HolonomicPathFollowerConfig(new PIDConstants(5.0, 0.0, 0.0), new PIDConstants(0, 0.0, 0.0), SwerveConstants.MAX_SPEED_METERSperSECOND, Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH), new ReplanningConfig());
+        public static final HolonomicPathFollowerConfig autoConfig = new HolonomicPathFollowerConfig(new PIDConstants(8.0, 0.0, 0.0), new PIDConstants(0, 0.0, 0.0), SwerveConstants.MAX_SPEED_METERSperSECOND, Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH), new ReplanningConfig());
         //public static final double MAX_ACCELERATION = 0.5; //TODO determine
         //public static final double MAX_VELOCITY = 4.9; //TODO determine
         //public static final double MAX_ROT_ACCELERATION = 0.5; //TODO determine
@@ -88,21 +88,22 @@ public class Constants {
         public static final double METERSperWHEEL_REVOLUTION = 2 * Math.PI * WHEEL_RADIUS_METERS;
         public static final double METERSperROBOT_REVOLUTION = 2 * Math.PI
             * Math.hypot(TRACK_WIDTH, WHEEL_BASE_WIDTH);
-        public static final double MAX_SPEED_METERSperSECOND = MAX_SPEED_TICKSper100MS / SECONDSper100MS
-            / DRIVE_MOTOR_TICKSperREVOLUTION * METERSperWHEEL_REVOLUTION;
+        //public static final double MAX_SPEED_METERSperSECOND = MAX_SPEED_TICKSper100MS / SECONDSper100MS
+        //    / DRIVE_MOTOR_TICKSperREVOLUTION * METERSperWHEEL_REVOLUTION;
+        public static final double MAX_SPEED_METERSperSECOND = 6; //5.5
         public static final double MAX_SPEED_RADIANSperSECOND = MAX_SPEED_METERSperSECOND / METERSperROBOT_REVOLUTION
             * (2 * Math.PI);
         //public static final double MAX_SPEED_MPS = 4.9; //TODO get precise values
-        public static final double P_ROTATION_CONTROLLER = 0.072;
+        public static final double P_ROTATION_CONTROLLER = 0.055;
         public static final double I_ROTATION_CONTROLLER = 0.0;
         public static final double D_ROTATION_CONTROLLER = 0.0;
 
         public static final double STEER_FEEDBACK_COEFFICIENT = 1.0 / 18.0 * 360.0;
 
-        public static final pidValues FL_STEER_PID_VALUES = new pidValues(0.01, 0, 0);
-        public static final pidValues FR_STEER_PID_VALUES = new pidValues(0.01, 0, 0);
-        public static final pidValues RL_STEER_PID_VALUES = new pidValues(0.01, 0, 0);
-        public static final pidValues RR_STEER_PID_VALUES = new pidValues(0.01, 0, 0);
+        public static final pidValues FL_STEER_PID_VALUES = new pidValues(0.015, 0, 0);
+        public static final pidValues FR_STEER_PID_VALUES = new pidValues(0.015, 0, 0);
+        public static final pidValues RL_STEER_PID_VALUES = new pidValues(0.015, 0, 0);
+        public static final pidValues RR_STEER_PID_VALUES = new pidValues(0.015, 0, 0);
 
         public static final pidValues FL_DRIVE_PID_VALUES = new pidValues(1, 0, 0);
         public static final pidValues FR_DRIVE_PID_VALUES = new pidValues(1, 0, 0);

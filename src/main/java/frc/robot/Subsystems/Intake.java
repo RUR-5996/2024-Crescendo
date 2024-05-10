@@ -23,6 +23,7 @@ public class Intake extends SubsystemBase implements Loggable{
     static double speed = 0;
     public IntakeState state = IntakeState.IDLE;
 
+    @Deprecated
     public static Intake getInstance() {
         if(instance == null) {
             instance = new Intake();
@@ -67,6 +68,9 @@ public class Intake extends SubsystemBase implements Loggable{
                 case CLIMBER:
                     speed = 0;
                     break;
+                case DEFENSE:
+                    speed = 0;
+                    break;
             }
         },
         () -> speed = 0);
@@ -93,6 +97,7 @@ public class Intake extends SubsystemBase implements Loggable{
         return m_intakeMotor.getStatorCurrent().getValueAsDouble();
     }
 
+    @Deprecated
     public BooleanSupplier isLoaded() {
         BooleanSupplier supplier = () -> getIntakeCurrent() > 15; //TODO check the values
         return supplier;

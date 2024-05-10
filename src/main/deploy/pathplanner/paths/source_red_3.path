@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.797069883921068,
-        "y": 4.660384427651614
+        "x": 15.806819642142848,
+        "y": 4.484888779753807
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.870842853318248,
-        "y": 3.8316549792131647
+        "x": 14.880592611540028,
+        "y": 3.6561593313153575
       },
       "isLocked": false,
       "linkedName": "source_red_shoot"
     },
     {
       "anchor": {
-        "x": 9.683971481957215,
-        "y": 1.0919729202878845
+        "x": 8.31703315828284,
+        "y": 0.7718141932010376
       },
       "prevControl": {
-        "x": 10.727195611160818,
-        "y": 1.0919729202878845
+        "x": 9.469476801186383,
+        "y": 0.3119922629393954
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,6 +42,23 @@
               "type": "named",
               "data": {
                 "name": "set_intake"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 0.85,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "g_intake"
               }
             }
           ]

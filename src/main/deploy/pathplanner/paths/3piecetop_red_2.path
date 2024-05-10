@@ -3,12 +3,12 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 13.95,
+        "x": 13.64,
         "y": 5.57
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.83184382045724,
+        "x": 14.52184382045724,
         "y": 5.5768617000416905
       },
       "isLocked": false,
@@ -16,12 +16,12 @@
     },
     {
       "anchor": {
-        "x": 15.377830280601179,
-        "y": 5.567111941824834
+        "x": 15.221834149131482,
+        "y": 5.57
       },
       "prevControl": {
-        "x": 14.377830280601179,
-        "y": 5.567111941824834
+        "x": 14.221834149131482,
+        "y": 5.57
       },
       "nextControl": null,
       "isLocked": false,
@@ -42,6 +42,40 @@
               "type": "named",
               "data": {
                 "name": "g_intake"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 0.35,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "set_speaker"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "New Event Marker",
+      "waypointRelativePos": 0.95,
+      "command": {
+        "type": "parallel",
+        "data": {
+          "commands": [
+            {
+              "type": "named",
+              "data": {
+                "name": "shoot"
               }
             }
           ]

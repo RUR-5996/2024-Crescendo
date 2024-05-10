@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.39732979703489,
-        "y": 5.537862667174266
+        "x": 15.221834149131482,
+        "y": 5.57
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.783095029372957,
-        "y": 5.5768617000416905
+        "x": 14.607599381469548,
+        "y": 5.608999032867425
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "mid_red_shoot"
     },
     {
       "anchor": {
-        "x": 13.9738650973739,
-        "y": 5.537862667174266
+        "x": 13.64,
+        "y": 5.57
       },
       "prevControl": {
-        "x": 14.753845754722388,
-        "y": 5.537862667174266
+        "x": 14.41998065734849,
+        "y": 5.57
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "New Event Marker",
-      "waypointRelativePos": 0.75,
+      "waypointRelativePos": 0.55,
       "command": {
         "type": "parallel",
         "data": {

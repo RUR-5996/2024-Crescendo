@@ -9,9 +9,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class LEDs extends SubsystemBase{
 
-    AnalogOutput red = new AnalogOutput(0);
-    AnalogOutput green = new AnalogOutput(1);
-    //AnalogOutput blue = new AnalogOutput(1);
+    AnalogOutput red = new AnalogOutput(1);
+    //AnalogOutput green = new AnalogOutput(2);
+    //AnalogOutput blue = new AnalogOutput(3);
 
     double redVoltage = 0;
     double greenVoltage = 0;
@@ -24,7 +24,7 @@ public class LEDs extends SubsystemBase{
     @Override
     public void periodic() {
         red.setVoltage(redVoltage);
-        green.setVoltage(greenVoltage);
+        //green.setVoltage(greenVoltage);
         //blue.setVoltage(blueVoltage);
     }
 

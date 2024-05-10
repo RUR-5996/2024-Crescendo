@@ -27,7 +27,6 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.annotations.Config;
 import io.github.oblarg.oblog.annotations.Log;
 
 public class Shooter extends SubsystemBase implements Loggable {
@@ -41,8 +40,6 @@ public class Shooter extends SubsystemBase implements Loggable {
     SparkPIDController m_rotationPID;
 
     AnalogEncoder m_encoder = new AnalogEncoder(new AnalogInput(0));
-
-    private static Shooter instance;
 
     private TalonFXConfiguration shooterTalonConfig = new TalonFXConfiguration();
 
@@ -115,7 +112,6 @@ public class Shooter extends SubsystemBase implements Loggable {
 
     public void init() {
         m_rotationEncoder.setPosition(0);
-        //m_rotationEncoder.setPosition(360-getAbsolutePosition()); //357.5
     }
 
     @Override
@@ -145,11 +141,6 @@ public class Shooter extends SubsystemBase implements Loggable {
         shooterAngle = angle;
     }
 
-    @Log
-    public double timeDiff() {
-        return robotTimer.get() - lastTime;
-    }
-
     public Command setState(String stateName, DoubleSupplier robotAngleDegs) {
         return Commands.runOnce(() -> {
             switch (stateName) {
@@ -167,7 +158,7 @@ public class Shooter extends SubsystemBase implements Loggable {
                     break;
                 case "AMP":
                     state = ShooterState.AMP;
-                    setShooterAngle(122);
+                    setShooterAngle(123);
                     break;
                 case "SPEAKER":
                     longDist = false;
@@ -182,6 +173,11 @@ public class Shooter extends SubsystemBase implements Loggable {
                 case "CLIMBER":
                     state = ShooterState.CLIMBER;
                     setShooterAngle(0); //TODO test ideal angle
+                    break;
+                case "DEFENSE":
+                    state = ShooterState.DEFENSE;
+                    setShooterAngle(180);
+                    break;
             }
         });
     }
@@ -242,6 +238,10 @@ public class Shooter extends SubsystemBase implements Loggable {
                     setShortSpeed(-0.7);
                     setLongSpeed(0);
                     break;
+                case DEFENSE:
+                    setShortSpeed(0);
+                    setLongSpeed(0);
+                    break;
             }
         },
         () -> stopShooter());
@@ -277,31 +277,21 @@ public class Shooter extends SubsystemBase implements Loggable {
                 case CLIMBER:
                     setShortSpeed(-0.75);
                     setLongSpeed(0.80);
+                    break;
+                case DEFENSE:
+                    setShortSpeed(0);
+                    setLongSpeed(0);
+                    break;
             } 
         }, 
         () -> stopShooter());
     }
-
-    /*public Command climb() {
-        return Commands.runOnce(() -> {
-            state = ShooterState.HOME; //TODO test TRAP. If it works, set this state to 180 offset to point up
-            setShooterAngle(180);
-        });
-    }*/
 
     public Command stopShooterCommand() {
         return Commands.runOnce(() -> {
             setShortSpeed(0);
             setLongSpeed(0);
         });
-    }
-
-    public double calculateSpeakerAngle(double dist) { //TODO test with odometry, create line function
-        double closeAngle = 130.25;
-        double podiumAngle = 125;
-        double distFromSpeaker = 0;
-
-        return 0;
     }
 
     public void stopShooter() {
@@ -315,17 +305,6 @@ public class Shooter extends SubsystemBase implements Loggable {
             setLongSpeed(0);
         },
         () -> stopShooter());
-    }
-
-    //evanometer lol
- //   @Config.NumberSlider(defaultValue = 1) //TODO apply coeff to shooter speeds if needed, here is the default change structure for it
-    public void setShooterCoeff(double coeff) {
-        this.coeff = coeff;
-    }
-
-    @Log
-    public boolean hasNote() { //TODO test this to measure the max value
-        return getShortCurrent() > 20; //TODO might not be suitable, consider adding a color sensor or something else or add a timeout
     }
 
     @Log
@@ -362,26 +341,47 @@ public class Shooter extends SubsystemBase implements Loggable {
         return state;
     }
 
-    public Command updateSpeakerAngle(DoubleSupplier angleSupplier, Shooter shooter) {
+    /*public Command updateSpeakerAngle(DoubleSupplier angleSupplier, Shooter shooter) {
         return Commands.run(
             () -> {
                 if(state == ShooterState.SPEAKER_BACK || state == ShooterState.SPEAKER_FRONT){
                     double angle = angleSupplier.getAsDouble();
                     if(angle <= 40 && angle >= -40) {
-                        setShooterAngle(207);
-                    } else if((angle < -40 && angle >= -135)||(angle > 40 && angle <= 135)) {
-                        setShooterAngle(207);
+                        setShooterAngle(205);
+                    } 
+                    else if((angle < -40 && angle >= -135)||(angle > 40 && angle <= 135)) {
+                        setShooterAngle(205);
                     } else if(angle < -135 || angle > 135) {
                         if(longDist) {
                         state = ShooterState.SPEAKER_FRONT;
-                        setShooterAngle(133.5); //130
+                        setShooterAngle(126.5); //130
                         } else {
-                            setShooterAngle(135);
+                            setShooterAngle(137);
                         }  
                     }
                 }
             }, shooter
         );
+    }*/
+    
+    public Command updateSpeakerAngle(DoubleSupplier angleSupplier, Shooter shooter) { //TODO test
+        return Commands.run(
+            () -> {
+                if(state == ShooterState.SPEAKER_BACK || state == ShooterState.SPEAKER_FRONT){
+                    double angle = angleSupplier.getAsDouble();
+                    if(angle <= 90 && angle >= -90) {
+                        state = ShooterState.SPEAKER_BACK;
+                        setShooterAngle(205);
+                    } else if(angle < -90 || angle > 90) {
+                        state = ShooterState.SPEAKER_FRONT;
+                        if(longDist) {
+                            setShooterAngle(126.5);
+                        } else {
+                            setShooterAngle(137);
+                        }  
+                    }
+                }
+            }, shooter);
     }
 
     @Log
@@ -401,6 +401,8 @@ public class Shooter extends SubsystemBase implements Loggable {
                     return "SPEAKER_BACK";
                 case CLIMBER:
                     return "TRAP";
+                case DEFENSE:
+                    return "DEFENSE";
             } 
         return "NULL";
     }
@@ -410,12 +412,13 @@ public class Shooter extends SubsystemBase implements Loggable {
         return m_shortMotor.getStatorCurrent(); //TODO test supply current
     }
 
-    public BooleanSupplier isLoaded() {
+    @Deprecated
+    public BooleanSupplier isLoaded() { 
         BooleanSupplier supplier = () -> getShortCurrent() >= 15; //TODO test the current values
         return supplier;
     }
 
     public enum ShooterState {
-        HOME, INTAKE, LOADING_STATION, AMP, SPEAKER_FRONT, SPEAKER_BACK, CLIMBER;
+        HOME, INTAKE, LOADING_STATION, AMP, SPEAKER_FRONT, SPEAKER_BACK, CLIMBER, DEFENSE;
     }
 }

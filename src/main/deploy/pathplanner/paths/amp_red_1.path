@@ -3,25 +3,25 @@
   "waypoints": [
     {
       "anchor": {
-        "x": 15.767820609279466,
-        "y": 6.4348404231306695
+        "x": 15.82631915857656,
+        "y": 6.629835587462149
       },
       "prevControl": null,
       "nextControl": {
-        "x": 15.397329797038934,
-        "y": 7.146572772961165
+        "x": 15.237820974571644,
+        "y": 7.403434724005153
       },
       "isLocked": false,
-      "linkedName": null
+      "linkedName": "amp_red_shoot"
     },
     {
       "anchor": {
-        "x": 13.95436558094019,
-        "y": 6.9515776086184005
+        "x": 13.708038356247652,
+        "y": 6.993104356579084
       },
       "prevControl": {
-        "x": 14.656348172553828,
-        "y": 6.854080026449839
+        "x": 14.50035204108413,
+        "y": 6.493338972426163
       },
       "nextControl": null,
       "isLocked": false,
@@ -31,7 +31,7 @@
   "rotationTargets": [
     {
       "waypointRelativePos": 0.5,
-      "rotationDegrees": 14.470294099657155,
+      "rotationDegrees": 28.583300394484155,
       "rotateFast": false
     }
   ],
@@ -63,7 +63,7 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": 2.3532968656681788,
+    "rotation": -27.55281157671792,
     "rotateFast": false
   },
   "reversed": false,
