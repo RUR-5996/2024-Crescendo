@@ -36,6 +36,7 @@ public class Climber extends SubsystemBase implements Loggable{
     double leftOut = 235;
     double rightOut = 235;
 
+    @Deprecated
     public static Climber getInstance() {
         if(instance == null) {
             instance = new Climber();
@@ -110,6 +111,14 @@ public class Climber extends SubsystemBase implements Loggable{
             state = ClimberState.IDLE;
             m_rightPID.setReference(0, ControlType.kDutyCycle);}
         );
+    }
+
+    public Command halveClimber() {
+        return Commands.run(() -> {
+            state = ClimberState.CLIMBING;
+            m_rightPID.setReference(235*0.6, ControlType.kPosition);
+            m_leftPID.setReference(235*0.6, ControlType.kPosition);
+        });
     }
 
     public Command setState(String stateName) {

@@ -5,7 +5,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Filesystem;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
@@ -25,18 +24,10 @@ import frc.robot.Subsystems.LEDs;
 import frc.robot.Subsystems.Shooter;
 import frc.robot.Subsystems.SwerveDrive;
 import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.Logger;
-
-import java.io.File;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
 import java.util.function.BooleanSupplier;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
-import com.pathplanner.lib.commands.PathPlannerAuto;
-import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 
 public class RobotContainer implements Loggable {
@@ -94,30 +85,25 @@ public class RobotContainer implements Loggable {
     SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
     SHOOTER.setDefaultCommand(SHOOTER.updateSpeakerAngle(SWERVE.supplyRobotAngleDegrees(), SHOOTER));
 
-    NamedCommands.registerCommand("g_intake", SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()).andThen(Commands.parallel(INTAKE.intake("INTAKE"), SHOOTER.intake())).withTimeout(0.5));
+    NamedCommands.registerCommand("g_intake", SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()).andThen(Commands.parallel(INTAKE.intake(), SHOOTER.intake())).withTimeout(1.5));
     NamedCommands.registerCommand("set_amp", SHOOTER.setState("AMP", SWERVE.supplyRobotAngleDegrees()));
     NamedCommands.registerCommand("set_speaker", SHOOTER.setState("SPEAKER", SWERVE.supplyRobotAngleDegrees()).andThen(Commands.waitSeconds(0.5)).andThen(SHOOTER.preloadPiece().withTimeout(0.2)));
     NamedCommands.registerCommand("shoot", SHOOTER.deploy().withTimeout(0.5));
+    NamedCommands.registerCommand("set_intake", SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()));
 
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Autonomous", autoChooser);
   }
-
   private void configureBindings() {
 
-    //b1.toggleOnTrue(SWERVE.configState(SHOOTER.supplyShooterState())); //TODO probably rebind onto the main controller for the driver to enable autonomous features
-    //TODO put one button for rotation controller and one button for tag/note controller (or require double click for tag/note)
     //xBox.a().toggleOnTrue(SWERVE.configState(() -> "NULL")); //disables all assissts
-    //xBox.b().toggleOnFalse(SWERVE.toggleSlowMode()); //might get removed, no need to go slow
     xBox.b().toggleOnTrue(SWERVE.configState("CLIMBER"));
     xBox.y().toggleOnTrue(SHOOTER.preloadPiece().withTimeout(0.1));
-    xBox.x().whileTrue(INTAKE.intake("REVERSE"));
+    xBox.x().whileTrue(INTAKE.reverse());
     //xBox.start().toggleOnTrue(SWERVE.configState(""));
 
-    xBox.rightBumper().whileTrue(Commands.parallel(SHOOTER.intake(), INTAKE.intake(shooterState)).andThen(Commands.parallel(SHOOTER.intake(), INTAKE.intake(shooterState)).withTimeout(0.5).andThen(Commands.parallel(SHOOTER.stopShooterCommand(), INTAKE.stopIntake())))); //TODO interrupt once gamepiece is in the main shooter assembly
-    // xBox.rightBumper().whileTrue(INTAKE.intake(shooterState));
+    xBox.rightBumper().whileTrue(Commands.parallel(SHOOTER.intake(), INTAKE.intake()));
     xBox.leftBumper().whileTrue(SHOOTER.deploy()); //TODO what happens if both are pressed?
-    //xBox.rightBumper().toggleOnFalse(SHOOTER.preloadPiece().withTimeout(0.75)); //TODO test if it runs or if it just triggers once, also test timing
 
     b2.toggleOnTrue(SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()));
     b2.toggleOnTrue(SWERVE.configState("INTAKE"));
@@ -128,17 +114,25 @@ public class RobotContainer implements Loggable {
     b5.toggleOnTrue(SHOOTER.setState("SPEAKER", SWERVE.supplyRobotAngleDegrees()).andThen(SHOOTER.preloadPiece().withTimeout(0.2)));
     b5.toggleOnTrue(SWERVE.configState("SPEAKER_FRONT"));
 
+    b7.toggleOnTrue(SHOOTER.tilt(false));
+    b6.toggleOnTrue(SHOOTER.tilt(true));
+    
+    //b9.toggleOnTrue(CLIMBER.halveClimber().withTimeout(2).andThen(Commands.parallel(CLIMBER.stopLeftClimber(), CLIMBER.stopRightClimber())));
+    b9.toggleOnTrue(SHOOTER.setState("DEFENSE", SWERVE.supplyRobotAngleDegrees()));
+    b9.toggleOnTrue(SWERVE.configState("DEFENSE"));
+
+
+    b1.toggleOnTrue(SHOOTER.longDistanceTilt());
     b10.toggleOnTrue(CLIMBER.setState("OUT"));
     b10.toggleOnTrue(SWERVE.configState("INTAKE"));
     b11.toggleOnTrue(CLIMBER.setState("CLIMBING"));
+    b11.toggleOnTrue(SWERVE.configState("CLIMBER"));
 
 
     b7.toggleOnTrue(LEDS.resetTimer().andThen(LEDS.signalAmplify().withTimeout(3)));
 
     //extends arms on 15seconds
     new Trigger(isEndgame()).toggleOnTrue(Commands.parallel(CLIMBER.setState("AUTO_OUT"), LEDS.signalEndgame()));
-    new Trigger(SHOOTER.isLoaded()).toggleOnTrue(LEDS.signalIntake().withTimeout(3));
-    new Trigger(INTAKE.isLoaded()).toggleOnTrue(LEDS.signalIntake().withTimeout(3));
 
     xBox.leftTrigger().whileTrue(CLIMBER.climbLeft());
     xBox.rightTrigger().whileTrue(CLIMBER.climbRight());
@@ -158,24 +152,14 @@ public class RobotContainer implements Loggable {
       SWERVE::setAutoChassisSpeeds,
       AutoConstants.autoConfig,
       () -> {
+        /*if(DriverStation.getAlliance().get() == DriverStation.Alliance.Blue) {
+          return true;
+        } else {
+          return false;
+        }*/
         return false;
       },
       SWERVE);
-    //HashMap<String, PathConstraints> constraintsOverride = new HashMap<>();
-
-    /*List<File> files = List.of(
-      Objects.requireNonNull(new File(Filesystem.getDeployDirectory(), "pathplanner")
-        .listFiles((dir, name) -> name.endsWith(".path"))));
-        
-    for(File file : files) {
-      String pathName = file.getName().split("\\.")[0];
-      PathConstraints constraints = constraintsOverride.getOrDefault(pathName,
-        new PathConstraints(AutoConstants.MAX_VELOCITY, AutoConstants.MAX_ACCELERATION, AutoConstants.MAX_ROT_VELOCITY, AutoConstants.MAX_ROT_ACCELERATION));
-      autoSelect.addOption(pathName, PathPlannerPath.fromPathFile(file.getName())); //TODO test if this works with PathPlannerPath or if it has to be PathPlannerTrajectory
-    }
-
-    autoSelect.setDefaultOption(files.get(0).getName().split("\\.")[0], PathPlannerPath.fromPathFile(files.get(0).getName()));
-    */
   }
 
   public static void periodic() {
@@ -192,5 +176,4 @@ public class RobotContainer implements Loggable {
   public Command getAutoCommand() {
     return autoChooser.getSelected();
   }
-
 }

@@ -8,20 +8,20 @@
       },
       "prevControl": null,
       "nextControl": {
-        "x": 14.607599381469548,
-        "y": 5.608999032867425
+        "x": 14.334606151397576,
+        "y": 6.2105959841373375
       },
       "isLocked": false,
       "linkedName": "mid_red_shoot"
     },
     {
       "anchor": {
-        "x": 13.64,
-        "y": 5.57
+        "x": 9.147318123696076,
+        "y": 7.1217400554459225
       },
       "prevControl": {
-        "x": 14.41998065734849,
-        "y": 5.57
+        "x": 10.60978185622449,
+        "y": 7.228987395831338
       },
       "nextControl": null,
       "isLocked": false,
@@ -33,7 +33,7 @@
   "eventMarkers": [
     {
       "name": "New Event Marker",
-      "waypointRelativePos": 0.55,
+      "waypointRelativePos": 0,
       "command": {
         "type": "parallel",
         "data": {
@@ -41,7 +41,7 @@
             {
               "type": "named",
               "data": {
-                "name": "g_intake"
+                "name": "set_intake"
               }
             }
           ]
@@ -57,13 +57,13 @@
   },
   "goalEndState": {
     "velocity": 0,
-    "rotation": -1.5911402711946838,
+    "rotation": 0,
     "rotateFast": false
   },
   "reversed": false,
   "folder": null,
   "previewStartingState": {
-    "rotation": -0.971021931079219,
+    "rotation": 0,
     "velocity": 0
   },
   "useDefaultConstraints": true

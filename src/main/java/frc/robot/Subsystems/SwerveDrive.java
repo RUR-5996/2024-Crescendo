@@ -1,7 +1,6 @@
 package frc.robot.Subsystems;
 
 import java.util.function.DoubleSupplier;
-import java.util.function.Supplier;
 
 import com.kauailabs.navx.frc.AHRS;
 
@@ -27,14 +26,10 @@ import frc.robot.Subsystems.swerve.DriveTrain;
 import frc.robot.Subsystems.swerve.SwerveDef;
 import frc.robot.util.LimelightHelpers;
 import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.annotations.Config;
 import io.github.oblarg.oblog.annotations.Log;
 
 @SuppressWarnings("removal")
 public class SwerveDrive extends SubsystemBase implements Loggable{
-
-    //single instance
-    private static SwerveDrive SWERVE;
 
     //control variables
     DriveTrain DRIVETRAIN;
@@ -153,6 +148,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                 setHoldAngleFlag(false);
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
+                setSlowmodeFlag(false);
                 setHoldAngle(defaultAngle);
                 break;
             case "INTAKE":
@@ -160,6 +156,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
                 setHoldAngle(defaultAngle);
+                setSlowmodeFlag(false);
                 break;
             case "LOADING_STATION":
                 setHoldAngleFlag(true);
@@ -170,6 +167,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                 }
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
+                setSlowmodeFlag(true);
                 break;
             case "AMP":
                 setHoldAngleFlag(true);
@@ -180,42 +178,50 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                 }
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
+                setSlowmodeFlag(true);
                 break;
             case "SPEAKER_FRONT":
                 setHoldAngleFlag(false);
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
                 setHoldAngle(defaultAngle);
+                setSlowmodeFlag(false);
                 break;
             case "SPEAKER_BACK":
                 setHoldAngleFlag(false);
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
                 setHoldAngle(defaultAngle);
+                setSlowmodeFlag(false);
                 break;
             case "NULL":
                 setHoldAngleFlag(false);
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
                 setHoldAngle(defaultAngle);
+                setSlowmodeFlag(false);
                 break;
             case "CLIMBER":
-                setHoldAngleFlag(true);
-                if(getRobotAngleDegrees() > 0 && getRobotAngleDegrees() < 90) {
-                    setHoldAngle(60);
-                } else if(getRobotAngleDegrees() > -90 && getRobotAngleDegrees() < 0) {
-                    setHoldAngle(-60);
-                } else {
-                    setHoldAngle(-180);
-                }
+                setHoldAngleFlag(false);
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
+                setSlowmodeFlag(true);
+                break;
+            case "DEFENSE":
+                setHoldAngleFlag(false);
+                setNoteControllerFlag(false);
+                setTagControllerFlag(false);
+                setSlowmodeFlag(false);
                 break;
         }});
     }   
     
     public Command toggleSlowMode() {
         return Commands.runOnce(() -> {slowmode = !slowmode;});
+    }
+    
+    public void setSlowmodeFlag(boolean flag) {
+        slowmode = flag;
     }
 
     @Log
@@ -228,7 +234,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     }
 
     @Log
-    public double updateTagController() {
+    public double updateTagController() { //TODO disable for champs
         boolean seeTag = LimelightHelpers.getTV("zadni");
         if(seeTag) {
             double tagPosition = LimelightHelpers.getTX("zadni");
@@ -390,7 +396,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
             if(slowmode) { //TODO probably disable, there is no need to go slow this year and there is nothing to break on the robot
                 xSpeed = xSpeed * DriverConstants.PRECISION_RATIO;
                 ySpeed = ySpeed * DriverConstants.PRECISION_RATIO;
-                rotation = rotation * DriverConstants.PRECISION_RATIO;
+                //rotation = rotation * DriverConstants.PRECISION_RATIO;
             }
 
             if(holdAngleEnabled) {
@@ -429,14 +435,6 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
 
             DRIVETRAIN.setModuleSpeeds(states);
         }, drive);
-    }
-
-    public Command autonomousDrive(double xSpeed, double ySpeed, double rotation) { //TODO check if robot or field relative
-        return Commands.run(() -> {
-            SwerveModuleState[] states = DRIVETRAIN.swerveKinematics.toSwerveModuleStates(ChassisSpeeds.fromFieldRelativeSpeeds(ySpeed, xSpeed, rotation, gyro.getRotation2d()));
-            SwerveDriveKinematics.desaturateWheelSpeeds(states, SwerveConstants.MAX_SPEED_METERSperSECOND);
-            DRIVETRAIN.setModuleSpeeds(states);
-        });
     }
 
     public double deadzone(double input) { //TODO prepsat inline
