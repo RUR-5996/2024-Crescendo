@@ -159,18 +159,18 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
                 setSlowmodeFlag(false);
                 break;
             case "LOADING_STATION":
-                setHoldAngleFlag(true);
+                setHoldAngleFlag(false); //true
                 if(isRed()) {
                     setHoldAngle(-120);
                 } else {
-                    setHoldAngle(120);
+                    setHoldAngle(-90);//120
                 }
                 setNoteControllerFlag(false);
                 setTagControllerFlag(false);
-                setSlowmodeFlag(true);
+                setSlowmodeFlag(false);
                 break;
             case "AMP":
-                setHoldAngleFlag(true);
+                setHoldAngleFlag(false); //TRUE
                 if(isRed()) {
                     setHoldAngle(90);
                 } else {
@@ -386,9 +386,9 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         return Commands.run(() -> {
             SwerveModuleState[] states;
 
-            double leftX = lx.getAsDouble();
-            double leftY = ly.getAsDouble();
-            double rightX = rx.getAsDouble();
+            double leftX = lx.getAsDouble()*0.7;
+            double leftY = ly.getAsDouble()*0.7;
+            double rightX = rx.getAsDouble()*0.7;
 
             xSpeed = leftX * leftX * Math.signum(leftX) * SwerveConstants.MAX_SPEED_METERSperSECOND * DriverConstants.DRIVE_GOVERNOR;
             ySpeed = leftY * leftY * Math.signum(leftY) * SwerveConstants.MAX_SPEED_METERSperSECOND * DriverConstants.DRIVE_GOVERNOR;

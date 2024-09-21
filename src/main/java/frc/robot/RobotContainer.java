@@ -97,9 +97,17 @@ public class RobotContainer implements Loggable {
   private void configureBindings() {
 
     //xBox.a().toggleOnTrue(SWERVE.configState(() -> "NULL")); //disables all assissts
-    xBox.b().toggleOnTrue(SWERVE.configState("CLIMBER"));
-    xBox.y().toggleOnTrue(SHOOTER.preloadPiece().withTimeout(0.1));
-    xBox.x().whileTrue(INTAKE.reverse());
+    //xBox.b().toggleOnTrue(SWERVE.configState("CLIMBER"));
+    //xBox.y().toggleOnTrue(SHOOTER.preloadPiece().withTimeout(0.1));
+    //xBox.x().whileTrue(INTAKE.reverse());
+    xBox.a().onTrue(SHOOTER.setState("INTAKE", SWERVE.supplyRobotAngleDegrees()));
+    xBox.a().onTrue(SWERVE.configState("INTAKE"));
+    xBox.b().onTrue(SHOOTER.setState("SPEAKER", SWERVE.supplyRobotAngleDegrees()).andThen(SHOOTER.preloadPiece().withTimeout(0.2)));
+    xBox.b().onTrue(SWERVE.configState("SPEAKER_FRONT"));
+    xBox.y().onTrue(SHOOTER.setState("LOADING_STATION", SWERVE.supplyRobotAngleDegrees()));
+    xBox.y().onTrue(SWERVE.configState("LOADING_STATION"));
+    xBox.x().onTrue(SHOOTER.setState("AMP", SWERVE.supplyRobotAngleDegrees()));
+    xBox.x().onTrue(SWERVE.configState("AMP"));
     //xBox.start().toggleOnTrue(SWERVE.configState(""));
 
     xBox.rightBumper().whileTrue(Commands.parallel(SHOOTER.intake(), INTAKE.intake()));

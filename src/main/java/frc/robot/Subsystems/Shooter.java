@@ -267,12 +267,12 @@ public class Shooter extends SubsystemBase implements Loggable {
                     setLongSpeed(-0.5);
                     break;
                 case SPEAKER_FRONT:
-                    setShortSpeed(-0.75);
-                    setLongSpeed(0.95);
+                    setShortSpeed(-0.55); //-0.75
+                    setLongSpeed(0.75); //0.95
                     break;
                 case SPEAKER_BACK:
-                    setShortSpeed(-0.75);
-                    setLongSpeed(0.95);
+                    setShortSpeed(-0.55); //-0.75
+                    setLongSpeed(0.75); //0.95
                     break;
                 case CLIMBER:
                     setShortSpeed(-0.75);
@@ -301,7 +301,7 @@ public class Shooter extends SubsystemBase implements Loggable {
 
     public Command preloadPiece() {
         return Commands.runEnd(() -> {
-            setShortSpeed(0.5);
+            setShortSpeed(0.5); //0.5
             setLongSpeed(0);
         },
         () -> stopShooter());
@@ -369,10 +369,10 @@ public class Shooter extends SubsystemBase implements Loggable {
             () -> {
                 if(state == ShooterState.SPEAKER_BACK || state == ShooterState.SPEAKER_FRONT){
                     double angle = angleSupplier.getAsDouble();
-                    if(angle <= 90 && angle >= -90) {
+                    if(angle <= -90 || angle >= 90) { //90 && -90
                         state = ShooterState.SPEAKER_BACK;
-                        setShooterAngle(205);
-                    } else if(angle < -90 || angle > 90) {
+                        setShooterAngle(126.5);//205
+                    } else if(angle < 90 && angle > -90) { //-90 || 90
                         state = ShooterState.SPEAKER_FRONT;
                         if(longDist) {
                             setShooterAngle(126.5);
