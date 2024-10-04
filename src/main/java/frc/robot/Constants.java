@@ -5,6 +5,9 @@
 package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import frc.robot.subsystems.SwerveDef.pidValues;
@@ -73,11 +76,21 @@ public final class Constants {
     public static final pidValues RL_DRIVE_PID_VALUES = new pidValues(1, 0, 0);
     public static final pidValues RR_DRIVE_PID_VALUES = new pidValues(1, 0, 0);
   }
-
+  
   public static class DriverConstants {
     public static final double CONTROLLER_DEBOUNCE_TIME = 0.2;
-        public static final double DRIVE_GOVERNOR = 1;
-        public static final double TURN_GOVERNOR = 1;
-        public static final double PRECISION_RATIO = 0.2;
+    public static final double DRIVE_GOVERNOR = 1;
+    public static final double TURN_GOVERNOR = 1;
+    public static final double PRECISION_RATIO = 0.2;
+  }
+  
+  public static final class AutoConstants { //TODO move to SwerveConstants
+    public static final double t_kP = 15;
+    public static final double r_kP = 15;
+    public static final HolonomicPathFollowerConfig autoConfig = new HolonomicPathFollowerConfig(new PIDConstants(8.0, 0.0, 0.0), new PIDConstants(0, 0.0, 0.0), SwerveConstants.MAX_SPEED_METERSperSECOND, Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH), new ReplanningConfig());
+    //public static final double MAX_ACCELERATION = 0.5; //TODO determine
+    //public static final double MAX_VELOCITY = 4.9; //TODO determine
+    //public static final double MAX_ROT_ACCELERATION = 0.5; //TODO determine
+   // public static final double MAX_ROT_VELOCITY = 2*Math.PI*Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH)*SwerveConstants.MAX_SPEED_METERSperSECOND; //TODO determine
   }
 }

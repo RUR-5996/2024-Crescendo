@@ -1,0 +1,73 @@
+{
+  "version": 1.0,
+  "startingPose": {
+    "position": {
+      "x": 15.221834149131482,
+      "y": 5.57
+    },
+    "rotation": 0
+  },
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "named",
+          "data": {
+            "name": "set_speaker"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4piece_1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "4piece_2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3piecetop_red_1"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3piecetop_red_2"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3piecetop_red_3"
+          }
+        },
+        {
+          "type": "path",
+          "data": {
+            "pathName": "3piecetop_red_4"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "shoot"
+          }
+        }
+      ]
+    }
+  },
+  "folder": null,
+  "choreoAuto": false
+}
