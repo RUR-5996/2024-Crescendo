@@ -1,13 +1,13 @@
-package frc.robot.subsystems;
+package frc.robot.Subsystems;
 
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.subsystems.SwerveDef.DriveMotor;
-import frc.robot.subsystems.SwerveDef.SteerMotor;
-import frc.robot.subsystems.SwerveDef.SteerSensor;
-import frc.robot.subsystems.SwerveDef.SwerveModule;
+import frc.robot.Subsystems.SwerveDef.DriveMotor;
+import frc.robot.Subsystems.SwerveDef.SteerMotor;
+import frc.robot.Subsystems.SwerveDef.SteerSensor;
+import frc.robot.Subsystems.SwerveDef.SwerveModule;
 
 public class DriveTrain {
 

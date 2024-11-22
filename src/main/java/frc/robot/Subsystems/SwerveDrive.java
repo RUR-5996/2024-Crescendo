@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.Subsystems;
 
 import java.util.function.DoubleSupplier;
 
@@ -22,8 +22,8 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.subsystems.DriveTrain;
-import frc.robot.subsystems.SwerveDef;
+import frc.robot.Subsystems.DriveTrain;
+import frc.robot.Subsystems.SwerveDef;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.annotations.Log;
 

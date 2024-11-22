@@ -10,7 +10,7 @@ import com.pathplanner.lib.util.PIDConstants;
 import com.pathplanner.lib.util.ReplanningConfig;
 
 import edu.wpi.first.math.geometry.Translation2d;
-import frc.robot.subsystems.SwerveDef.pidValues;
+import frc.robot.Subsystems.SwerveDef.pidValues;
 
 public final class Constants {
   public static class SwerveConstants {
@@ -92,5 +92,16 @@ public final class Constants {
     //public static final double MAX_VELOCITY = 4.9; //TODO determine
     //public static final double MAX_ROT_ACCELERATION = 0.5; //TODO determine
    // public static final double MAX_ROT_VELOCITY = 2*Math.PI*Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH)*SwerveConstants.MAX_SPEED_METERSperSECOND; //TODO determine
+  }
+
+  public static class ColourConstants {
+    public static double RAINBOW = .75;
+    public static double VIOLET = .5;
+    public static double PINK = -.37;
+    public static double FLASHBANG = -.91;
+    public static double BLUEGREEN = -.75;
+    public static double LIGHTBLUE = .37;
+    public static double DARKBLUE = .75;
+    public static double BLUEPINK = .5;
   }
 }

@@ -8,13 +8,17 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.AutoConstants;
-import frc.robot.subsystems.SwerveDrive;
+import frc.robot.Subsystems.SwerveDrive;
+import frc.robot.Subsystems.LimeLight;
+import frc.robot.Subsystems.LEDs;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
@@ -23,13 +27,16 @@ import com.pathplanner.lib.path.PathPlannerPath;
 public class RobotContainer {
 
   private final CommandXboxController xBox = new CommandXboxController(0);
+  private final SendableChooser<Command> autoChooser;
 
   private PowerDistribution pdp;
   private SwerveDrive SWERVE;
+  private LEDs LEDController;
   
   public RobotContainer() {
     SWERVE = new SwerveDrive();
     pdp = new PowerDistribution(0, ModuleType.kCTRE);
+    LEDController = new LEDs();
 
     loadPaths();
 
@@ -43,6 +50,11 @@ public class RobotContainer {
 
   private void configureBindings() {
     xBox.b().toggleOnTrue(SWERVE.toggleSlowMode());
+    xBox.leftBumper().onTrue(new Command(() -> {
+      double[] relativePosition = LimeLight.getRelativePos();
+      SmartDashboard.putData("Position", relativePosition);
+      LEDController.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
+    }));
   }
 
   private void loadPaths() {
