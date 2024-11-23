@@ -50,9 +50,12 @@ public class RobotContainer {
 
   private void configureBindings() {
     xBox.b().toggleOnTrue(SWERVE.toggleSlowMode());
-    xBox.leftBumper().onTrue(new Command(() -> {
+    xBox.leftBumper().onTrue(Commands.runOnce(() -> {
       double[] relativePosition = LimeLight.getRelativePos();
-      SmartDashboard.putData("Position", relativePosition);
+      SmartDashboard.putNumber("Position tx", relativePosition[0]);
+      SmartDashboard.putNumber("Position ty", relativePosition[1]);
+      SmartDashboard.putNumber("Position ta", relativePosition[2]);
+      SmartDashboard.putNumber("AprilTagID", relativePosition[3]);
       LEDController.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
     }));
   }
